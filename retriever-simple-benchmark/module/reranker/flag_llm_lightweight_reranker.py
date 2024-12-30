@@ -9,7 +9,6 @@ class LayerWiseFlagLLMRerankerType(BaseReranker):
         model_path: str = "BAAI/bge-reranker-v2-minicpm-layerwise",
         use_fp16: bool = True,
         use_bf16: bool = False,
-        devices: list[str] = None,
         cache_dir: str | None = None,
         apply_minmax_normalize: bool = False,
     ):
@@ -19,7 +18,6 @@ class LayerWiseFlagLLMRerankerType(BaseReranker):
         :param use_fp16: Whether to load/run the model with FP16 (speeds up inference).
         :param use_bf16: Whether to load/run the model with BF16.
                          (Set one of use_fp16/use_bf16 to True)
-        :param devices: List of devices, e.g. ["cpu"] or ["cuda:0"]. Default None -> CPU
         :param cache_dir: Optional cache directory for model files.
         :param apply_minmax_normalize: Whether to apply min-max normalization on final scores.
         """
@@ -31,6 +29,19 @@ class LayerWiseFlagLLMRerankerType(BaseReranker):
             use_bf16=use_bf16,
             cache_dir=cache_dir,
         )
+
+    def _flatten_scores(self, scores):
+        """
+        Flatten a nested list of scores (e.g., [[s1, s2], [s3, s4], ...])
+        into a simple 1D list [s1, s2, s3, s4, ...].
+        """
+        flat = []
+        for item in scores:
+            if isinstance(item, list):
+                flat.extend(item)
+            else:
+                flat.append(item)
+        return flat
 
     def compute_score(
         self,
@@ -49,15 +60,17 @@ class LayerWiseFlagLLMRerankerType(BaseReranker):
         # Convert (q, d) -> [q, d]
         input_pairs = [list(p) for p in pairs]
 
-        # LayerWiseFlagLLMReranker는 compress_ratio, compress_layers 등을 받지 않으므로 제거.
-        # cutoff_layers만 필요한 경우 전달 가능.
+        # Get scores from the reranker (could be nested)
         scores = self.reranker.compute_score(
             input_pairs,
             cutoff_layers=cutoff_layers,
         )
 
+        # 1) Flatten the scores to ensure it's always 1D
+        scores = self._flatten_scores(scores)
+
+        # 2) Optional min-max normalization
         if normalize or self.apply_minmax_normalize:
-            # Optional min-max normalization
             min_score = float(np.min(scores))
             max_score = float(np.max(scores))
             if (max_score - min_score) > 1e-8:
@@ -86,11 +99,16 @@ class LayerWiseFlagLLMRerankerType(BaseReranker):
         # Build list of [query, doc]
         input_pairs = [[query, doc] for doc in docs]
 
+        # Get scores from the reranker (could be nested)
         scores = self.reranker.compute_score(
             input_pairs,
             cutoff_layers=cutoff_layers,
         )
 
+        # 1) Flatten the scores to ensure it's always 1D
+        scores = self._flatten_scores(scores)
+
+        # 2) Optional min-max normalization
         if normalize or self.apply_minmax_normalize:
             min_score = float(np.min(scores))
             max_score = float(np.max(scores))
