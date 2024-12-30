@@ -11,7 +11,7 @@
 * (planned, not yet) [KURE](https://github.com/nlpai-lab/KURE)
 
 ## Models
-* HuggingFace & FlagReranker & FlagLLMReranker supported cross-encoder
+* HuggingFace (huggingface) & FlagReranker & FlagLLMReranker supported cross-encoder
 * (planned, not yet) HuggingFace & FlagEmbedding supported bi-encoder
 
 ## Command
@@ -24,6 +24,8 @@ make init
 ```
 # single GPU only at the moment.
 make run TYPE=cross-encoder MODEL_NAME=sigridjineth/ko-reranker-v1.1 MODEL_CLASS=huggingface DATATYPE_NAME=AutoRAG
+make run TYPE=cross-encoder MODEL_NAME=BAAI/bge-reranker-v2-m3 MODEL_CLASS=flagreranker DATATYPE_NAME=AutoRAG
+make run MODEL_NAME=BAAI/bge-reranker-v2-gemma MODEL_CLASS=flagllmreranker
 ```
 
 ## Contributions
