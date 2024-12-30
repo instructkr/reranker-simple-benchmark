@@ -11,7 +11,7 @@
 * (planned, not yet) [KURE](https://github.com/nlpai-lab/KURE)
 
 ## Models
-* HuggingFace (TYPE-huggingface) & FlagReranker (TYPE=flagreranker) & FlagLLMReranker (TYPE=flagllmreranker) supported cross-encoder
+* HuggingFace (MODEL_CLASS=huggingface) & FlagReranker (MODEL_CLASS=flagreranker) & FlagLLMReranker (MODEL_CLASS=flagllmreranker) supported cross-encoder
 * (planned, not yet) HuggingFace & FlagEmbedding supported bi-encoder
 
 ## Command
