@@ -1,0 +1,17 @@
+[project]
+name = "retriever-simple-benchmark"
+version = "0.1.0"
+description = "https://instruct.kr"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "flagembedding>=1.2.11",
+    "numpy>=2.2.1",
+    "pandas>=2.2.3",
+    "peft>=0.14.0",
+    "pyarrow>=18.1.0",
+    "scikit-learn>=1.6.0",
+    "torch>=2.5.1",
+    "transformers>=4.47.1",
+    "typer>=0.15.1",
+]
