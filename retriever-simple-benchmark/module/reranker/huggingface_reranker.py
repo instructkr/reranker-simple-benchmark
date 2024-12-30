@@ -1,9 +1,10 @@
 import torch
 import numpy as np
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
+from .base import BaseReranker
 
 
-class HuggingFaceReranker:
+class HuggingFaceReranker(BaseReranker):
     def __init__(self, model_path, use_fp16=True, max_length=512):
         self.tokenizer = AutoTokenizer.from_pretrained(
             model_path, trust_remote_code=True

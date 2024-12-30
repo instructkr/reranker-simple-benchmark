@@ -1,58 +1,57 @@
 import numpy as np
-from FlagEmbedding import FlagReranker
+from FlagEmbedding import FlagLLMReranker
 from .base import BaseReranker
 
 
-class FlagRerankerType(BaseReranker):
-    """
-    A multi-GPU capable Reranker based on the FlagEmbedding library.
-    Uses FlagAutoReranker.from_finetuned(...) under the hood.
-    """
-
+class FlagLLMRerankerType(BaseReranker):
     def __init__(
         self,
-        model_path: str = "BAAI/bge-reranker-large",
+        model_path: str = "BAAI/bge-reranker-v2-gemma",
         use_fp16: bool = True,
+        use_bf16: bool = False,
         cache_dir: str | None = None,
         apply_minmax_normalize: bool = False,
     ):
         """
-        :param model_path: Path or name of the model on HF Hub (e.g. 'BAAI/bge-reranker-large').
-        :param use_fp16: Whether to load/run the model with FP16.
-        :param batch_size: Batch size for inference.
-        :param query_max_length: Maximum length for tokenizing queries.
-        :param doc_max_length: Maximum length for tokenizing docs (FlagEmbedding uses 'max_length' param).
-        :param devices: list of device strings (e.g. ["cuda:0", "cuda:1"]). If None, defaults to single GPU or CPU.
-        :param cache_dir: Optional cache directory (e.g. os.getenv('HF_HUB_CACHE')).
-        :param apply_minmax_normalize: Whether to apply min-max normalization on the final scores.
+        :param model_path: Name/path of the model on HF Hub (e.g. 'BAAI/bge-reranker-v2-gemma').
+        :param use_fp16: Whether to load/run the model with FP16 (speeds up inference).
+        :param use_bf16: Whether to load/run the model with BF16. (Set one of use_fp16/use_bf16 to True)
+        :param cache_dir: Optional cache directory for model files.
+        :param apply_minmax_normalize: Whether to apply min-max normalization on final scores.
         """
 
-        # Internally, FlagAutoReranker handles multi-GPU, batch processing, etc.
-        self.reranker = FlagReranker(
+        self.reranker = FlagLLMReranker(
             model_path,
             use_fp16=use_fp16,
+            use_bf16=use_bf16,
             cache_dir=cache_dir,
         )
 
-        # If you want additional normalization after each "compute_score" call
         self.apply_minmax_normalize = apply_minmax_normalize
 
     def compute_score(
         self, pairs: list[tuple[str, str]], normalize: bool = True
     ) -> list[float]:
         """
-        Compute score for each (query, doc_text) pair using FlagAutoReranker.
+        Compute scores for each (query, doc_text) pair.
 
-        The library expects pairs in the format: [ [query, doc], [query, doc], ... ]
-        It handles multi-GPU if 'devices' was set with multiple GPUs.
+        The library expects either:
+          - A single list [query, doc_text], or
+          - A list of lists: [[query, doc_text], [query, doc_text], ...]
 
-        :param pairs: list of (query, doc_text).
-        :param normalize: Whether to apply min-max normalization after getting raw scores.
+        Here, we convert list[tuple(str, str)] -> list[list[str]].
+
+        :param pairs: list of (query, doc_text) pairs.
+        :param normalize: Whether to apply min-max normalization on the raw scores.
         :return: list of float scores, one per (query, doc) pair.
         """
-        input_pairs = [list(p) for p in pairs]  # convert tuple->list if needed
+        # Convert (q, d) -> [q, d]
+        input_pairs = [list(p) for p in pairs]
+
+        # Call FlagLLMReranker
         scores = self.reranker.compute_score(input_pairs)
 
+        # Optional min-max normalization
         if normalize or self.apply_minmax_normalize:
             min_score = float(np.min(scores))
             max_score = float(np.max(scores))
@@ -67,15 +66,14 @@ class FlagRerankerType(BaseReranker):
         self, query: str, docs: list[str], normalize: bool = False
     ) -> list[float]:
         """
-        Batch version, accepting a single query but multiple docs.
-        This is needed by 'batched_compute_score' in your evaluate_model code.
+        Batch version to accept a single query + multiple docs.
 
         :param query: A single query string.
         :param docs: list of doc_texts.
         :param normalize: Whether to apply min-max normalization across these scores.
         :return: list of float scores, one per doc in 'docs'.
         """
-        # Construct pairs [ [query, doc1], [query, doc2], ... ]
+        # Build list of [query, doc]
         input_pairs = [[query, doc] for doc in docs]
         scores = self.reranker.compute_score(input_pairs)
 
