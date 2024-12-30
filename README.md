@@ -11,7 +11,7 @@
 * (planned, not yet) [KURE](https://github.com/nlpai-lab/KURE)
 
 ## Models
-* HuggingFace & FlagReranker supported cross-encoder
+* HuggingFace & FlagReranker & FlagLLMReranker supported cross-encoder
 * (planned, not yet) HuggingFace & FlagEmbedding supported bi-encoder
 
 ## Command

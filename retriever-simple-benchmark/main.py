@@ -3,8 +3,8 @@ import os
 import json
 import datetime
 
-from module.reranker.flag_reranker import FlagReranker
-from module.reranker.huggingface_reranker import HuggingFaceReranker
+from module.reranker.base import BaseReranker
+from module.reranker import determine_reranker_class
 from data import DATASET_CONFIGS
 from utils.data import load_data
 from utils.evaluate import evaluate_model
@@ -94,18 +94,7 @@ def evaluate(
     typer.echo(f"Model Class: {model_class}")
     typer.echo(f"FP16 enabled: {use_fp16}")
 
-    model_class_lower = model_class.lower()
-    if model_class_lower == "huggingface":
-        typer.echo("Using HuggingFaceReranker...")
-        reranker = HuggingFaceReranker(model_path=model_name, use_fp16=use_fp16)
-    elif model_class_lower == "flagreranker":
-        typer.echo("Using FlagReranker...")
-        reranker = FlagReranker(model_path=model_name, use_fp16=use_fp16)
-    else:
-        typer.echo(
-            f"Unsupported model_class '{model_class}'. Falling back to huggingface."
-        )
-        reranker = HuggingFaceReranker(model_path=model_name, use_fp16=use_fp16)
+    reranker: BaseReranker = determine_reranker_class(model_class, model_name, use_fp16)
 
     # 4) Evaluate the Model
     typer.echo("Starting evaluation...")
