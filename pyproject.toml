@@ -13,6 +13,6 @@ dependencies = [
     "pyarrow>=18.1.0",
     "scikit-learn>=1.6.0",
     "torch>=2.5.1",
-    "transformers>=4.47.1",
+    "transformers==4.46.0",
     "typer>=0.15.1",
 ]
