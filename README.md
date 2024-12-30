@@ -1,6 +1,12 @@
 # Retriever Simple Benchmark
+## Purpose
+* The goal is to create something lightweight, with minimal dependencies, that runs effortlessly and delivers immediate results.
 
-## Dataset (Korean only)
+## Benchmark Results
+* See [README.md](https://github.com/instructkr/retriever-simple-benchmark/blob/main/results/README.md)
+
+## Dataset
+* The target language is Korean at this moment.
 * [AutoRAG](https://github.com/Marker-Inc-Korea/AutoRAG-example-korean-embedding-benchmark/pull/6)
 * (planned, not yet) [KURE](https://github.com/nlpai-lab/KURE)
 

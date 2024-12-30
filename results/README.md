@@ -1,6 +1,7 @@
-## Reranker IR Benchmark (as of 2024. 12. 30.)
-* Note that cross-encoder only with AutoRAG dataset is applied at this moment.
-* The target language is Korean, and the task is IR (Reranking).
+## 리랭커 IR 벤치마크 (2024년 12월 30일 기준)
+* 현재 AutoRAG 데이터셋과 크로스 인코더만 적용되었습니다.
+* 대상 언어는 한국어이며, 작업은 정보 검색(IR, Reranking)입니다.
+* 현실적인 응용에서 리랭커를 평가할 때는 인퍼런스 시간, 정확도(accuracy), 재현율(recall) 등 다양한 관점을 종합적으로 고려해야 합니다. 따라서 순위를 매기기보다는 모든 데이터를 투명하게 공개하여 편견 없는 비교를 제공합니다.
 
 | **Model Name**                     | **Accuracy@1** | **Accuracy@3** | **Accuracy@5** | **Accuracy@10** | **F1@1** | **F1@3** | **F1@5** | **F1@10** | **Inference Time (s)** | **Avg Inference Time/query (s)** |
 |------------------------------------|----------------|----------------|----------------|-----------------|----------|----------|----------|-----------|-----------------------|----------------------------------|
@@ -9,3 +10,4 @@
 | Alibaba-NLP/gte-multilingual-reranker-base | 0.728    | 0.921          | 0.947          | 0.974           | 0.728    | 0.461    | 0.316    | 0.177     | 252.35               | 2.21                             |
 | sigridjineth/ko-reranker-v1.2-preview | 0.877       | 0.947          | 0.965          | 0.974           | 0.877    | 0.474    | 0.322    | 0.177     | 219.37               | 1.92                             |
 | upskyy/ko-reranker-8k             | 0.868          | 0.956          | 0.965          | 0.982           | 0.868    | 0.478    | 0.322    | 0.179     | 338.31               | 2.97                             |
+| Dongjin-kr/ko-reranker       | 0.851          | 0.947          | 0.965          | 0.982           | 0.851    | 0.474    | 0.322    | 0.179     | 231.00               | 2.03                             |
