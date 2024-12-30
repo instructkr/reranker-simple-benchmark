@@ -11,7 +11,13 @@
 * (planned, not yet) [KURE](https://github.com/nlpai-lab/KURE)
 
 ## Models
-* HuggingFace (MODEL_CLASS=huggingface) & FlagReranker (MODEL_CLASS=flagreranker) & FlagLLMReranker (MODEL_CLASS=flagllmreranker) supported cross-encoder
+* HuggingFace Reranker `MODEL_CLASS=huggingface`
+* FlagReranker `MODEL_CLASS=flagreranker`
+  * e.g. `BAAI/bge-reranker-v2-m3`
+* FlagLLMReranker `MODEL_CLASS=flagllmreranker`
+  * e.g. `BAAI/bge-reranker-v2-gemma`
+* FlagLayerwiseReranker `MODEL_CLASS=flaglayerwise`
+  * e.g. `BAAI/bge-reranker-v2.5-gemma2-lightweight`
 * (planned, not yet) HuggingFace & FlagEmbedding supported bi-encoder
 
 ## Command
