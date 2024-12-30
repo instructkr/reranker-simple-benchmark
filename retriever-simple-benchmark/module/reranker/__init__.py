@@ -2,6 +2,7 @@ from .base import BaseReranker
 from .huggingface_reranker import HuggingFaceReranker
 from .flag_reranker import FlagReranker
 from .flag_llm_reranker import FlagLLMRerankerType
+from .flag_llm_lightweight_reranker import LayerWiseFlagLLMRerankerType
 
 
 def determine_reranker_class(
@@ -23,6 +24,10 @@ def determine_reranker_class(
         reranker = FlagReranker(model_name_or_path=model_name, use_fp16=use_fp16)
     elif model_class_lower == "flagllmreranker":
         reranker = FlagLLMRerankerType(model_path=model_name, use_fp16=use_fp16)
+    elif model_class_lower == "flaglayerwise":
+        reranker = LayerWiseFlagLLMRerankerType(
+            model_path=model_name, use_fp16=use_fp16
+        )
     else:
         print(
             f"Unknown model class; falling back to HuggingFaceReranker: {model_class}"
