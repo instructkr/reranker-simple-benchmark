@@ -16,12 +16,8 @@ make init
 
 ### Run
 ```
+# single GPU only at the moment.
 make run TYPE=cross-encoder MODEL_NAME=sigridjineth/ko-reranker-v1.1 MODEL_CLASS=huggingface DATATYPE_NAME=AutoRAG
-```
-
-### Run with `torchrun`
-```
-make torchrun NPROC=2 TYPE=cross-encoder MODEL_NAME=dragonkue/bge-reranker-v2-m3-ko MODEL_CLASS=flagreranker DATATYPE_NAME=AutoRAG
 ```
 
 ## Reference

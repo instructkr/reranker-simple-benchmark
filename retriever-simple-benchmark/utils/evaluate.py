@@ -1,8 +1,6 @@
 import time
 import numpy as np
 import pandas as pd
-import torch
-import torch.distributed as dist
 from sklearn.metrics import precision_score, recall_score, f1_score
 from tqdm import tqdm
 
@@ -22,211 +20,60 @@ def evaluate_model(
     float,  # avg_inference_time
 ]:
     """
-    Evaluate the reranker on the entire corpus/query data, splitting queries across processes
-    if running under torchrun. Then gather partial results on rank 0, compute global metrics, and
-    broadcast them to all ranks. TQDM progress bar is shown only on rank 0 (for readability).
+    Single-process evaluation of a reranker on the entire corpus/query data.
 
-    Steps:
-      1) Split qd_df among processes (rank).
-      2) Each rank does local inference => local_ranks_list, local_scores_list, local_qids_list
-         with a progress bar (only rank=0).
-      3) Gather all local data on rank 0
-      4) Rank 0 merges them in the correct global order, runs calculate_accuracy/f1/etc.
-      5) Rank 0 broadcasts the final metrics to other ranks
-      6) Return the metrics so all ranks see the same result
-
-    :param corpus_df: DataFrame [doc_id, contents].
-    :param qd_df: DataFrame [qid, query, retrieval_gt, ...].
+    :param corpus_df: DataFrame [doc_id, contents]
+    :param qd_df:     DataFrame [qid, query, retrieval_gt, ...]
     :param valid_dict: dict with 'qrel' => { qid: set(doc_ids) }.
-    :param reranker: Reranker with `compute_score_batch(query, doc_texts, normalize=...)`.
-    :param batch_size: batch size for inference on (query, doc) pairs.
+    :param reranker:  Reranker with `compute_score_batch(query, doc_texts, normalize=...)`
+    :param batch_size: batch size for inference on (query, doc) pairs
     :return: (accuracies, f1_scores, recalls, precisions, total_inference_time, avg_inference_time).
     """
 
-    # ---------------------------
-    # 1) Check if distributed
-    # ---------------------------
-    if dist.is_available() and dist.is_initialized():
-        rank = dist.get_rank()
-        world_size = dist.get_world_size()
-    else:
-        rank = 0
-        world_size = 1
-
-    local_ranks_list: list[np.ndarray] = []
-    local_scores_list: list[np.ndarray] = []
-    local_qids_list: list = []  # store the QIDs in local order
+    # Prepare
+    doc_texts = corpus_df["contents"].tolist()
+    ranks_list = []
+    scores_list = []
     inference_times = []
 
-    doc_texts = corpus_df["contents"].tolist()
+    # Loop over queries (single process, single rank).
+    for row in tqdm(qd_df.itertuples(index=False), desc="Inference", total=len(qd_df)):
+        _ = row.qid
+        query_str = row.query
 
-    # ---------------------------
-    # 2) Split qd_df among ranks
-    # ---------------------------
-    num_queries = len(qd_df)
-    chunk_size = num_queries // world_size
-    remainder = num_queries % world_size
+        t0 = time.time()
 
-    start = rank * chunk_size
-    end = start + chunk_size
-    if rank < remainder:
-        start += rank
-        end += rank + 1
-    else:
-        start += remainder
-        end += remainder
+        # Compute scores for entire corpus with batching
+        scores = batched_compute_score(reranker, query_str, doc_texts, batch_size)
+        scores_arr = np.array(scores, dtype=np.float32)
 
-    local_qd_df = qd_df.iloc[start:end]
+        # Sort descending by score
+        sorted_idxs = np.argsort(-scores_arr)
+        ranks_list.append(sorted_idxs)
+        scores_list.append(scores_arr[sorted_idxs])
 
-    # If no queries for this rank, skip computations
-    if len(local_qd_df) == 0:
-        total_inference_time = 0.0
-        avg_inference_time = 0.0
-    else:
-        # ---------------------------
-        # 3) Local Inference w/ tqdm
-        # ---------------------------
-        # We'll wrap `enumerate(local_qd_df.itertuples(...))` with tqdm
-        # Only rank=0 shows the bar (disable=(rank!=0))
-        pbar = tqdm(
-            enumerate(local_qd_df.itertuples(index=False)),
-            desc=f"[Rank {rank}] Inference",
-            total=len(local_qd_df),
-            disable=(rank != 0),
-        )
-        for i, row in pbar:
-            qid = row.qid
-            query_str = row.query
+        t1 = time.time()
+        inference_times.append(t1 - t0)
 
-            t0 = time.time()
+    # Compute total/average inference times
+    total_inference_time = sum(inference_times)
+    avg_inference_time = total_inference_time / len(qd_df) if len(qd_df) else 0.0
 
-            scores = batched_compute_score(
-                reranker=reranker,
-                query=query_str,
-                doc_texts=doc_texts,
-                batch_size=batch_size,
-            )
-
-            scores_arr = np.array(scores, dtype=np.float32)
-            sorted_idxs = np.argsort(-scores_arr)
-
-            local_scores_list.append(scores_arr[sorted_idxs])
-            local_ranks_list.append(sorted_idxs)
-            local_qids_list.append(qid)
-
-            t1 = time.time()
-            elapsed = t1 - t0
-            inference_times.append(elapsed)
-
-        total_inference_time = sum(inference_times)
-        avg_inference_time = total_inference_time / len(local_qd_df)
-
-    # ---------------------------
-    # 4) Gather local data on rank 0
-    # ---------------------------
-    local_result = {
-        "qids": local_qids_list,
-        "ranks_list": local_ranks_list,
-        "scores_list": local_scores_list,
-        "times": inference_times,
-    }
-
-    gather_list = [None] * world_size
-    dist.all_gather_object(gather_list, local_result)
-
-    local_times_info = (total_inference_time, avg_inference_time)
-    gather_list_times = [None] * world_size
-    dist.all_gather_object(gather_list_times, local_times_info)
-
-    # ---------------------------
-    # 5) On rank 0, merge + compute global metrics
-    # ---------------------------
-    import pickle
-
-    if rank == 0:
-        # Merge partial results
-        global_map = {}
-
-        for r in range(world_size):
-            qids_r = gather_list[r]["qids"]
-            ranks_r = gather_list[r]["ranks_list"]
-            scores_r = gather_list[r]["scores_list"]
-
-            for qid_, ranks_arr, scores_arr in zip(qids_r, ranks_r, scores_r):
-                global_map[qid_] = (ranks_arr, scores_arr)
-
-        # Rebuild final_ranks_list in qd_df order
-        final_ranks_list = []
-        final_scores_list = []
-        for row in qd_df.itertuples(index=False):
-            qid = row.qid
-            ranks_, scores_ = global_map[qid]
-            final_ranks_list.append(ranks_)
-            final_scores_list.append(scores_)
-
-        # Compute global metrics
-        k_values = [1, 3, 5, 10]
-        accuracies = calculate_accuracy(
-            final_ranks_list, valid_dict, qd_df, corpus_df, k_values
-        )
-        f1_scores, recalls, precisions = calculate_f1_recall_precision(
-            final_ranks_list, valid_dict, qd_df, corpus_df, k_values
-        )
-
-        # Summation of total_inference_time
-        sum_total = 0.0
-        for ti, _ in gather_list_times:
-            sum_total += ti
-
-        global_total_inference_time = sum_total
-        global_avg_inference_time = (
-            global_total_inference_time / len(qd_df) if len(qd_df) else 0.0
-        )
-
-        final_metrics = {
-            "acc": accuracies,
-            "f1": f1_scores,
-            "recall": recalls,
-            "precision": precisions,
-            "total_time": global_total_inference_time,
-            "avg_time": global_avg_inference_time,
-        }
-
-        metrics_bytes = pickle.dumps(final_metrics)
-    else:
-        metrics_bytes = b""
-
-    # broadcast pickled metrics from rank0
-    length_tensor = torch.tensor(
-        [len(metrics_bytes)],
-        dtype=torch.long,
-        device="cuda" if torch.cuda.is_available() else "cpu",
+    # Compute final metrics
+    k_values = [1, 3, 5, 10]
+    accuracies = calculate_accuracy(ranks_list, valid_dict, qd_df, corpus_df, k_values)
+    f1_scores, recalls, precisions = calculate_f1_recall_precision(
+        ranks_list, valid_dict, qd_df, corpus_df, k_values
     )
-    dist.broadcast(length_tensor, src=0)
-    length_val = length_tensor.item()
 
-    recv_buffer = torch.empty(
-        [length_val], dtype=torch.uint8, device=length_tensor.device
+    return (
+        accuracies,
+        f1_scores,
+        recalls,
+        precisions,
+        total_inference_time,
+        avg_inference_time,
     )
-    if rank == 0:
-        recv_buffer[:length_val] = torch.tensor(
-            list(metrics_bytes), dtype=torch.uint8, device=length_tensor.device
-        )
-    dist.broadcast(recv_buffer, src=0)
-    if rank != 0:
-        metrics_bytes = bytes(recv_buffer.tolist())
-
-    final_metrics_unpacked = pickle.loads(metrics_bytes)
-
-    # Return them in the usual tuple format
-    accuracies = final_metrics_unpacked["acc"]
-    f1_scores = final_metrics_unpacked["f1"]
-    recalls = final_metrics_unpacked["recall"]
-    precisions = final_metrics_unpacked["precision"]
-    total_time = final_metrics_unpacked["total_time"]
-    avg_time = final_metrics_unpacked["avg_time"]
-
-    return (accuracies, f1_scores, recalls, precisions, total_time, avg_time)
 
 
 def batched_compute_score(

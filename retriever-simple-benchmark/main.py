@@ -2,8 +2,6 @@ import typer
 import os
 import json
 import datetime
-import torch.distributed as dist
-import torch
 
 from module.reranker.flag_reranker import FlagReranker
 from module.reranker.huggingface_reranker import HuggingFaceReranker
@@ -12,6 +10,7 @@ from utils.data import load_data
 from utils.evaluate import evaluate_model
 
 app = typer.Typer(help="CLI for model evaluation using Typer.")
+
 
 @app.command()
 def evaluate(
@@ -56,15 +55,7 @@ def evaluate(
     --use_fp16: Whether to use FP16 on GPU
 
     Example usage:
-      # Single process
-      python main.py evaluate \
-        --type cross-encoder \
-        --model_name "sigridjineth/ko-reranker-v1.1" \
-        --model_class huggingface \
-        --datatype_name AutoRAG
-
-      # Multi process (DDP)
-      torchrun --nproc_per_node=8 main.py evaluate \
+      uv run ./retriever-simple-benchmark/main.py evaluate \
         --type cross-encoder \
         --model_name "sigridjineth/ko-reranker-v1.1" \
         --model_class huggingface \
@@ -119,6 +110,7 @@ def evaluate(
     # 4) Evaluate the Model
     typer.echo("Starting evaluation...")
 
+    # Modified evaluate_model to also return timing info
     accuracies, f1_scores, recalls, precisions, total_time, avg_time = evaluate_model(
         corpus_df, qd_df, valid_dict, reranker
     )
@@ -168,21 +160,5 @@ def evaluate(
     typer.echo(f"Saved results to: {output_path}")
 
 
-def main():
-    """
-    If launched via torchrun (DDP), we initialize the default process group.
-    Otherwise, this is single-process mode.
-    """
-    local_rank = os.environ.get("LOCAL_RANK", None)
-    if local_rank is not None:
-        # Means we're likely in a multi-process scenario
-        torch.distributed.init_process_group(
-            backend="nccl",  # or "gloo" if CPU only
-            init_method="env://"
-            # world_size, rank automatically derived from env variables
-        )
-    app()
-
-
 if __name__ == "__main__":
-    main()
+    app()

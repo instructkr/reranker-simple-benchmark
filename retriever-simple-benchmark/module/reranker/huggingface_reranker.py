@@ -1,6 +1,5 @@
 import torch
 import numpy as np
-from torch.nn import DataParallel
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
 
@@ -14,11 +13,9 @@ class HuggingFaceReranker:
         model = AutoModelForSequenceClassification.from_pretrained(
             model_path, trust_remote_code=True
         )
+
         if use_fp16 and self.device.type == "cuda":
             model.half()
-
-        if torch.cuda.device_count() > 1:
-            model = DataParallel(model)
 
         self.model = model.to(self.device)
         self.model.eval()
