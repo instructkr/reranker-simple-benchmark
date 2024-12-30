@@ -1,17 +1,17 @@
-# Retriever Simple Benchmark
+# Make Running Benchmark Simple Again
 ## Purpose
-* The goal is to create benchmark project lightweight, with minimal dependencies, that runs effortlessly and delivers immediate results.
+* The goal is to redesign retrieval/reranker benchmark evaluation projects lightweight, with minimal dependencies, that runs effortlessly and delivers immediate results.
 
 ## Results
 * 벤치마크 결과는 [README.md](https://github.com/instructkr/retriever-simple-benchmark/blob/main/results/README.md) 에서 확인하세요.
 
 ## Dataset
 * The target language is Korean at this moment.
-* [AutoRAG](https://github.com/Marker-Inc-Korea/AutoRAG-example-korean-embedding-benchmark/pull/6)
+* [AutoRAG](https://github.com/Marker-Inc-Korea/AutoRAG-example-korean-embedding-benchmark/pull/6) (DATATYPE_NAME=AutoRAG)
 * (planned, not yet) [KURE](https://github.com/nlpai-lab/KURE)
 
 ## Models
-* HuggingFace (huggingface) & FlagReranker & FlagLLMReranker supported cross-encoder
+* HuggingFace (TYPE-huggingface) & FlagReranker (TYPE=flagreranker) & FlagLLMReranker (TYPE=flagllmreranker) supported cross-encoder
 * (planned, not yet) HuggingFace & FlagEmbedding supported bi-encoder
 
 ## Command

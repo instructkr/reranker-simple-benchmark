@@ -3,6 +3,7 @@ from .huggingface_reranker import HuggingFaceReranker
 from .flag_reranker import FlagReranker
 from .flag_llm_reranker import FlagLLMRerankerType
 
+
 def determine_reranker_class(
     model_class: str, model_name: str, use_fp16: bool
 ) -> BaseReranker:
