@@ -1,8 +1,9 @@
 import numpy as np
 from FlagEmbedding import FlagReranker
+from .base import BaseReranker
 
 
-class FlagRerankerType:
+class FlagRerankerType(BaseReranker):
     """
     A multi-GPU capable Reranker based on the FlagEmbedding library.
     Uses FlagAutoReranker.from_finetuned(...) under the hood.
