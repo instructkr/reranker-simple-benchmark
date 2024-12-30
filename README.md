@@ -26,10 +26,6 @@ make init
 make run TYPE=cross-encoder MODEL_NAME=sigridjineth/ko-reranker-v1.1 MODEL_CLASS=huggingface DATATYPE_NAME=AutoRAG
 ```
 
-## Reference
-
-https://huggingface.co/dragonkue/bge-reranker-v2-m3-ko/blob/main/cross_encoder_eval.ipynb
-
 ## Contributions
 
 This project welcomes contributions and suggestions. See [issues](https://github.com/instructkr/retriever-simple-benchmark/issues) if you consider doing any.
