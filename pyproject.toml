@@ -5,6 +5,7 @@ description = "https://instruct.kr"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "einops>=0.8.0",
     "flagembedding>=1.2.11",
     "numpy>=2.2.1",
     "pandas>=2.2.3",
