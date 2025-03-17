@@ -30,7 +30,7 @@ def evaluate(
     model_class: str = typer.Option(
         "huggingface",
         "--model_class",
-        help="Which model class to use. Possible: 'huggingface', 'flagreranker'. Default: huggingface.",
+        help="Which model class to use. Possible: 'huggingface', 'flagreranker', 'flagllmreranker', 'flaglayerwise', 'mxbai'. Default: huggingface.",
     ),
     # 4) Data type name (only supports 'AutoRAG')
     datatype_name: str = typer.Option(
@@ -59,6 +59,13 @@ def evaluate(
         --type cross-encoder \
         --model_name "sigridjineth/ko-reranker-v1.1" \
         --model_class huggingface \
+        --datatype_name AutoRAG
+        
+      # Example using MxbaiReranker:
+      uv run ./retriever-simple-benchmark/main.py evaluate \
+        --type cross-encoder \
+        --model_name "mixedbread-ai/mxbai-rerank-base-v2" \
+        --model_class mxbai \
         --datatype_name AutoRAG
     """
 
