@@ -1,0 +1,40 @@
+{
+  "timestamp": "20250318_023252",
+  "datatype_name": "AutoRAG",
+  "qa_path": "/home/sionic/projects/retriever-simple-benchmark/retriever-simple-benchmark/data/AutoRAG/qa_v4.parquet",
+  "corpus_path": "/home/sionic/projects/retriever-simple-benchmark/retriever-simple-benchmark/data/AutoRAG/ocr_corpus_v3.parquet",
+  "model_type": "cross-encoder",
+  "model_name": "mixedbread-ai/mxbai-rerank-large-v2",
+  "model_class": "mxbai",
+  "use_fp16": true,
+  "metrics": {
+    "accuracy": {
+      "1": 0.8859649122807017,
+      "3": 0.9912280701754386,
+      "5": 1.0,
+      "10": 1.0
+    },
+    "f1": {
+      "1": 0.8859649122807017,
+      "3": 0.4956140350877193,
+      "5": 0.33333333333333326,
+      "10": 0.1818181818181821
+    },
+    "recall": {
+      "1": 0.8859649122807017,
+      "3": 0.9912280701754386,
+      "5": 1.0,
+      "10": 1.0
+    },
+    "precision": {
+      "1": 0.8859649122807017,
+      "3": 0.3304093567251461,
+      "5": 0.19999999999999957,
+      "10": 0.09999999999999978
+    }
+  },
+  "inference_times": {
+    "total_inference_time_sec": 2373.9018058776855,
+    "avg_inference_time_per_query_sec": 20.823700051558646
+  }
+}
