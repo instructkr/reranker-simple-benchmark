@@ -1,0 +1,40 @@
+{
+  "timestamp": "20241230_155736",
+  "datatype_name": "AutoRAG",
+  "qa_path": "/retriever-simple-benchmark/data/AutoRAG/qa_v4.parquet",
+  "corpus_path": "/retriever-simple-benchmark/data/AutoRAG/ocr_corpus_v3.parquet",
+  "model_type": "cross-encoder",
+  "model_name": "sigridjineth/ko-reranker-v1.1",
+  "model_class": "huggingface",
+  "use_fp16": true,
+  "metrics": {
+    "accuracy": {
+      "1": 0.8070175438596491,
+      "3": 0.9210526315789473,
+      "5": 0.9473684210526315,
+      "10": 0.9736842105263158
+    },
+    "f1": {
+      "1": 0.8070175438596491,
+      "3": 0.4605263157894737,
+      "5": 0.31578947368421034,
+      "10": 0.17703349282296674
+    },
+    "recall": {
+      "1": 0.8070175438596491,
+      "3": 0.9210526315789473,
+      "5": 0.9473684210526315,
+      "10": 0.9736842105263158
+    },
+    "precision": {
+      "1": 0.8070175438596491,
+      "3": 0.30701754385964886,
+      "5": 0.18947368421052593,
+      "10": 0.09736842105263137
+    }
+  },
+  "inference_times": {
+    "total_inference_time_sec": 142.63781261444092,
+    "avg_inference_time_per_query_sec": 1.2512088825828152
+  }
+}

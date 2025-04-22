@@ -1,0 +1,40 @@
+{
+  "timestamp": "20241230_162956",
+  "datatype_name": "AutoRAG",
+  "qa_path": "/retriever-simple-benchmark/data/AutoRAG/qa_v4.parquet",
+  "corpus_path": "/retriever-simple-benchmark/data/AutoRAG/ocr_corpus_v3.parquet",
+  "model_type": "cross-encoder",
+  "model_name": "jinaai/jina-reranker-v2-base-multilingual",
+  "model_class": "huggingface",
+  "use_fp16": true,
+  "metrics": {
+    "accuracy": {
+      "1": 0.8070175438596491,
+      "3": 0.9298245614035088,
+      "5": 0.9385964912280702,
+      "10": 0.9473684210526315
+    },
+    "f1": {
+      "1": 0.8070175438596491,
+      "3": 0.4649122807017544,
+      "5": 0.3128654970760232,
+      "10": 0.17224880382775137
+    },
+    "recall": {
+      "1": 0.8070175438596491,
+      "3": 0.9298245614035088,
+      "5": 0.9385964912280702,
+      "10": 0.9473684210526315
+    },
+    "precision": {
+      "1": 0.8070175438596491,
+      "3": 0.309941520467836,
+      "5": 0.18771929824561365,
+      "10": 0.09473684210526297
+    }
+  },
+  "inference_times": {
+    "total_inference_time_sec": 216.5574553012848,
+    "avg_inference_time_per_query_sec": 1.8996268008884631
+  }
+}
