@@ -15,10 +15,11 @@ def app():
         "PublicHealthQA",
         "BelebeleRetrieval",
     ]
-    top_k_types = ["top10", "top1000"]
+    top_k_types = ["top10", "top100", "top1000"]
 
     score_types = {
         "top10": ["recall_at_10", "precision_at_10", "ndcg_at_10"],
+        "top100": ["recall_at_100", "precision_at_100", "ndcg_at_100"],
         "top1000": ["recall_at_1000", "precision_at_1000", "ndcg_at_1000"],
     }
 
