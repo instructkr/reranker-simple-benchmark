@@ -27,7 +27,7 @@ def app():
     for task in tasks:
         data[task] = {top_k: [] for top_k in top_k_types}
 
-    root_dir = "results/bm25"
+    root_dir = "results/stage1"
 
     # 데이터가 저장되어 있는 디렉토리의 모든 하위 폴더를 순회하면서 json 파일을 읽습니다.
     for subdir, dirs, files in os.walk(root_dir):

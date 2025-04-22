@@ -274,7 +274,7 @@ def retrieve_bm25_with_tokenize(
             evaluation = mteb.MTEB(tasks=tasks)
             results = evaluation.run(
                 bm25_s,
-                output_folder=f"results/bm25/{tokenizer_name}",
+                output_folder=f"results/stage1/bm25_{tokenizer_name}",
                 save_predictions=True,
             )
             print(
