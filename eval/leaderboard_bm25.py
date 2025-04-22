@@ -63,7 +63,7 @@ def app():
                                 )
                             )
 
-    # 각 작업에 대해 top1, top3, top5, top10 점수 표시
+    # 각 작업에 대해 top10, top1000 점수 표시
     for task in tasks:
         st.markdown(f"# {task}")
         for top_k in top_k_types:
@@ -78,7 +78,7 @@ def app():
                     f"F1_{top_k}",
                 ],
             )
-            df = df.sort_values(by=f"NDCG_{top_k}", ascending=False)
+            df = df.sort_values(by=f"Recall_{top_k}", ascending=False)
             st.dataframe(df, use_container_width=True)
 
             # 각 모델의 평균 점수 계산
