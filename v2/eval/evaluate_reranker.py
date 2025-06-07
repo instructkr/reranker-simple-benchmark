@@ -6,7 +6,7 @@ import torch
 from mteb import MTEB
 from sentence_transformers import CrossEncoder, SentenceTransformer
 
-cross_encoder_model_names = [
+model_names = [
     "BAAI/bge-reranker-v2-m3",
     "dragonkue/bge-reranker-v2-m3-ko",
     "sigridjineth/ko-reranker-v1.1",
@@ -33,15 +33,15 @@ tasks = [
 
 batch_size = 2048
 
-for cross_encoder_model_name in cross_encoder_model_names:
-    print(f"Evaluating model: {cross_encoder_model_name}")
+for model_name in model_names:
+    print(f"Evaluating model: {model_name}")
     
-    cross_encoder = CrossEncoder(cross_encoder_model_name, trust_remote_code=True, model_kwargs={"torch_dtype": torch.bfloat16})
+    cross_encoder = CrossEncoder(model_name, trust_remote_code=True, model_kwargs={"torch_dtype": torch.bfloat16})
     
-    output_dir = os.path.join("./results/stage2", cross_encoder_model_name)
+    output_dir = os.path.join("./results/stage2", model_name)
     
     for task in tasks:
-        print(f"Running tasks: {task} / {cross_encoder_model_name}")
+        print(f"Running tasks: {task} / {model_name}")
 
         tasks_mteb = mteb.get_tasks(tasks=[task], languages=["kor-Kore", "kor-Hang", "kor_Hang"])
         eval_splits = ["test"]
@@ -53,7 +53,7 @@ for cross_encoder_model_name in cross_encoder_model_names:
 
             evaluation.run(
                 cross_encoder,
-                top_k=100,
+                top_k=1000,
                 save_predictions=False,
                 output_folder=output_dir,
                 previous_results=previous_results,
@@ -68,4 +68,4 @@ for cross_encoder_model_name in cross_encoder_model_names:
                 batch_size=batch_size
             )
     
-    print(f"Completed evaluation for model: {cross_encoder_model_name}")
+    print(f"Completed evaluation for model: {model_name}")
