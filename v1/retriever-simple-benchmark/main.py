@@ -5,6 +5,7 @@ import datetime
 
 from module.reranker.base import BaseReranker
 from module.reranker import determine_reranker_class
+from module.reranker.http_reranker import HttpReranker
 from data import DATASET_CONFIGS
 from utils.data import load_data
 from utils.evaluate import evaluate_model
@@ -43,6 +44,12 @@ def evaluate(
         True,
         "--use-fp16",
         help="Use FP16 on GPU if available.",
+    ),
+    # 6) Only for HTTP reranker: truncate texts before sending
+    truncate: bool = typer.Option(
+        True,
+        "--truncate/--no-truncate",
+        help="Whether to truncate texts when querying remote HTTP endpoint; only used for model_class 'http' or 'api'.",
     ),
 ):
     """
@@ -100,8 +107,14 @@ def evaluate(
     typer.echo(f"Model Name: {model_name}")
     typer.echo(f"Model Class: {model_class}")
     typer.echo(f"FP16 enabled: {use_fp16}")
-
-    reranker: BaseReranker = determine_reranker_class(model_class, model_name, use_fp16)
+    typer.echo(f"Truncate texts: {truncate}")
+    # Instantiate the appropriate reranker
+    model_class_lower = model_class.lower()
+    if model_class_lower in ("http", "api"):
+        typer.echo(f"Using HTTP Reranker endpoint: {model_name}")
+        reranker: BaseReranker = HttpReranker(endpoint_url=model_name, truncate=truncate)
+    else:
+        reranker: BaseReranker = determine_reranker_class(model_class, model_name, use_fp16)
 
     # 4) Evaluate the Model
     typer.echo("Starting evaluation...")

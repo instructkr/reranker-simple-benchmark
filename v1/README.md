@@ -18,7 +18,7 @@
   * e.g. `BAAI/bge-reranker-v2-gemma`
 * FlagLayerwiseReranker `MODEL_CLASS=flaglayerwise`
   * e.g. `BAAI/bge-reranker-v2.5-gemma2-lightweight`
-* (planned, not yet) HuggingFace & FlagEmbedding supported bi-encoder
+* TEI-style Reranker using HTTP API
 
 ## Command
 ### Setup
@@ -32,6 +32,12 @@ make init
 make run TYPE=cross-encoder MODEL_NAME=sigridjineth/ko-reranker-v1.1 MODEL_CLASS=huggingface DATATYPE_NAME=AutoRAG
 make run TYPE=cross-encoder MODEL_NAME=BAAI/bge-reranker-v2-m3 MODEL_CLASS=flagreranker DATATYPE_NAME=AutoRAG
 make run MODEL_NAME=BAAI/bge-reranker-v2-gemma MODEL_CLASS=flagllmreranker
+
+uv run ./retriever-simple-benchmark/main.py \
+    --type cross-encoder \
+    --model_name "http://localhost:8080/rerank" \
+    --model_class http \
+    --datatype_name AutoRAG
 ```
 
 ## Contributions
