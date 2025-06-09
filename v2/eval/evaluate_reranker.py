@@ -91,7 +91,11 @@ def evaluate_reranker_model(model_name, gpu_id, tasks):
         for task in tasks:
             print(f"Running task: {task} / {model_name} on GPU {gpu_id}")
 
-            tasks_mteb = mteb.get_tasks(tasks=[task], languages=["kor-Kore", "kor-Hang", "kor_Hang"])
+            tasks_mteb = mteb.get_tasks(
+                tasks=[task],
+                languages=["kor-Kore", "kor-Hang", "kor_Hang"],
+                eval_splits=["test"] if task == "MultiLongDocRetrieval" else None,
+            )
             evaluation = MTEB(tasks=tasks_mteb)
 
             if os.path.exists(os.path.join(previous_results_dir, task + "_id.jsonl")):
