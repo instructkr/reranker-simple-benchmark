@@ -23,7 +23,7 @@ class HttpReranker(BaseReranker):  # type: ignore[misc]
         self, query: str, docs: List[str], normalize: bool = False
     ) -> List[float]:
         # Build payload
-        payload = {"query": query, "texts": docs, "truncate": self.truncate}
+        payload = {"query": query, "texts": docs, "truncate": self.truncate, 'instructions': '당신은 한국어 문서 검색 시스템의 리랭커입니다. 사용자의 질문에 가장 관련성이 높은 문서를 찾아 순위를 매겨야 합니다.   다음 기준으로 문서의 관련성을 평가하세요:  1. 질문의 핵심 키워드와 문서 내용의 일치도  2. 질문이 요구하는 정보의 구체적인 포함 여부  3. 문맥적 관련성과 의미적 유사도  특히 주의할 점:  - 질문의 언어(한국어/영어)와 관계없이 의미적으로 관련된 문서를 찾으세요  - 고유명사, 인명, 기관명 등은 다양한 표기가 가능함을 고려하세요  - 직접적인 답변이 없더라도 관련 정보가 포함된 문서도 중요합니다'}
         data = json.dumps(payload).encode("utf-8")
         req = urllib_request.Request(
             self.endpoint_url,
