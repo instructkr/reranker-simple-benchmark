@@ -104,8 +104,8 @@ def evaluate_reranker_model(model_name, gpu_id, tasks):
 
                 evaluation.run(
                     cross_encoder,
-                    top_k=1000,
-                    save_predictions=False,
+                    top_k=50,
+                    save_predictions=True,
                     output_folder=output_dir,
                     previous_results=previous_results,
                     batch_size=batch_size
@@ -114,7 +114,8 @@ def evaluate_reranker_model(model_name, gpu_id, tasks):
                 print(f"Previous results not found: {task}")
                 evaluation.run(
                     cross_encoder,
-                    save_predictions=False,
+                    top_k=50,
+                    save_predictions=True,
                     output_folder=output_dir,
                     batch_size=batch_size
                 )
