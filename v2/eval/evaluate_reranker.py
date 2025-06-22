@@ -9,9 +9,136 @@ from mteb import MTEB
 from sentence_transformers import CrossEncoder
 from setproctitle import setproctitle
 import traceback
+from datasets import load_dataset
 
+from mteb.tasks.Retrieval.multilingual.XPQARetrieval import XPQARetrieval
+from mteb.tasks.Retrieval.multilingual.XPQARetrieval import _LANG_CONVERSION, _load_dataset_csv
+from mteb.tasks.Retrieval.multilingual.BelebeleRetrieval import BelebeleRetrieval, _EVAL_SPLIT
 from mteb.evaluation.evaluators.RetrievalEvaluator import DenseRetrievalExactSearch
+
 _original_load_results_file = DenseRetrievalExactSearch.load_results_file
+
+def xpqa_load_data(self, **kwargs):
+    if self.data_loaded:
+        return
+
+    path = self.metadata_dict["dataset"]["path"]
+    revision = self.metadata_dict["dataset"]["revision"]
+    eval_splits = self.metadata_dict["eval_splits"]
+    dataset = _load_dataset_csv(path, revision, eval_splits)
+
+    self.queries, self.corpus, self.relevant_docs = {}, {}, {}
+    for lang_pair, _ in self.metadata.eval_langs.items():
+        lang_corpus, lang_question = (
+            lang_pair.split("-")[0],
+            lang_pair.split("-")[1],
+        )
+        lang_not_english = lang_corpus if lang_corpus != "eng" else lang_question
+        dataset_language = dataset.filter(
+            lambda x: x["lang"] == _LANG_CONVERSION.get(lang_not_english)
+        )
+        question_key = "question_en" if lang_question == "eng" else "question"
+        corpus_key = "candidate" if lang_corpus == "eng" else "answer"
+
+        queries_to_ids = {
+            eval_split: {
+                q: f"Q{str(_id)}"
+                for _id, q in enumerate(
+                    sorted(set(dataset_language[eval_split][question_key])
+                ))
+            }
+            for eval_split in eval_splits
+        }
+
+        self.queries[lang_pair] = {
+            eval_split: {v: k for k, v in queries_to_ids[eval_split].items()}
+            for eval_split in eval_splits
+        }
+
+        corpus_to_ids = {
+            eval_split: {
+                document: f"C{str(_id)}"
+                for _id, document in enumerate(
+                    sorted(set(dataset_language[eval_split][corpus_key])
+                ))
+            }
+            for eval_split in eval_splits
+        }
+
+        self.corpus[lang_pair] = {
+            eval_split: {
+                v: {"text": k} for k, v in corpus_to_ids[eval_split].items()
+            }
+            for eval_split in eval_splits
+        }
+
+        self.relevant_docs[lang_pair] = {}
+        for eval_split in eval_splits:
+            self.relevant_docs[lang_pair][eval_split] = {}
+            for example in dataset_language[eval_split]:
+                query_id = queries_to_ids[eval_split].get(example[question_key])
+                document_id = corpus_to_ids[eval_split].get(example[corpus_key])
+                if query_id in self.relevant_docs[lang_pair][eval_split]:
+                    self.relevant_docs[lang_pair][eval_split][query_id][
+                        document_id
+                    ] = 1
+                else:
+                    self.relevant_docs[lang_pair][eval_split][query_id] = {
+                        document_id: 1
+                    }
+
+    self.data_loaded = True
+
+def belebele_load_data(self, **kwargs) -> None:
+    if self.data_loaded:
+        return
+
+    self.dataset = load_dataset(**self.metadata.dataset)
+
+    self.queries = {lang_pair: {_EVAL_SPLIT: {}} for lang_pair in self.hf_subsets}
+    self.corpus = {lang_pair: {_EVAL_SPLIT: {}} for lang_pair in self.hf_subsets}
+    self.relevant_docs = {
+        lang_pair: {_EVAL_SPLIT: {}} for lang_pair in self.hf_subsets
+    }
+
+    for lang_pair in self.hf_subsets:
+        languages = self.metadata.eval_langs[lang_pair]
+        lang_corpus, lang_question = (
+            languages[0].replace("-", "_"),
+            languages[1].replace("-", "_"),
+        )
+        ds_corpus = self.dataset[lang_corpus]
+        ds_question = self.dataset[lang_question]
+
+        question_ids = {
+            question: _id
+            for _id, question in enumerate(sorted(set(ds_question["question"])))
+        }
+
+        link_to_context_id = {}
+        context_idx = 0
+        for row in ds_corpus:
+            if row["link"] not in link_to_context_id:
+                context_id = f"C{context_idx}"
+                link_to_context_id[row["link"]] = context_id
+                self.corpus[lang_pair][_EVAL_SPLIT][context_id] = {
+                    "title": "",
+                    "text": row["flores_passage"],
+                }
+                context_idx = context_idx + 1
+
+        for row in ds_question:
+            query = row["question"]
+            query_id = f"Q{question_ids[query]}"
+            self.queries[lang_pair][_EVAL_SPLIT][query_id] = query
+
+            context_link = row["link"]
+            context_id = link_to_context_id[context_link]
+            if query_id not in self.relevant_docs[lang_pair][_EVAL_SPLIT]:
+                self.relevant_docs[lang_pair][_EVAL_SPLIT][query_id] = {}
+            self.relevant_docs[lang_pair][_EVAL_SPLIT][query_id][context_id] = 1
+
+    self.data_loaded = True
 
 def patched_load_results_file(self):
     """JSONL 파일을 지원하는 패치된 load_results_file 메서드"""
@@ -33,6 +160,8 @@ def patched_load_results_file(self):
     else:
         return _original_load_results_file(self)
 
+BelebeleRetrieval.load_data = belebele_load_data
+XPQARetrieval.load_data = xpqa_load_data
 DenseRetrievalExactSearch.load_results_file = patched_load_results_file
 
 logging.basicConfig(level=logging.INFO)
