@@ -1,7 +1,7 @@
 {
   "dataset_revision": "main",
   "task_name": "MIRACLRetrieval",
-  "mteb_version": "1.38.30",
+  "mteb_version": "1.38.57",
   "scores": {
     "dev": [
       {
@@ -17,8 +17,8 @@
         "map_at_5": 0.68472,
         "map_at_10": 0.73078,
         "map_at_20": 0.74316,
-        "map_at_100": 0.74448,
-        "map_at_1000": 0.74448,
+        "map_at_100": 0.74447,
+        "map_at_1000": 0.74447,
         "recall_at_1": 0.38432,
         "recall_at_3": 0.73488,
         "recall_at_5": 0.86459,
@@ -55,12 +55,12 @@
         "nauc_ndcg_at_20_max": -0.015727,
         "nauc_ndcg_at_20_std": -0.338834,
         "nauc_ndcg_at_20_diff1": 0.350515,
-        "nauc_ndcg_at_100_max": -0.01732,
-        "nauc_ndcg_at_100_std": -0.324255,
-        "nauc_ndcg_at_100_diff1": 0.340224,
-        "nauc_ndcg_at_1000_max": -0.01732,
-        "nauc_ndcg_at_1000_std": -0.324255,
-        "nauc_ndcg_at_1000_diff1": 0.340224,
+        "nauc_ndcg_at_100_max": -0.017321,
+        "nauc_ndcg_at_100_std": -0.324259,
+        "nauc_ndcg_at_100_diff1": 0.340228,
+        "nauc_ndcg_at_1000_max": -0.017321,
+        "nauc_ndcg_at_1000_std": -0.324259,
+        "nauc_ndcg_at_1000_diff1": 0.340228,
         "nauc_map_at_1_max": -0.063381,
         "nauc_map_at_1_std": -0.483753,
         "nauc_map_at_1_diff1": 0.564813,
@@ -76,12 +76,12 @@
         "nauc_map_at_20_max": -0.02997,
         "nauc_map_at_20_std": -0.413505,
         "nauc_map_at_20_diff1": 0.383202,
-        "nauc_map_at_100_max": -0.03032,
-        "nauc_map_at_100_std": -0.409335,
-        "nauc_map_at_100_diff1": 0.380163,
-        "nauc_map_at_1000_max": -0.03032,
-        "nauc_map_at_1000_std": -0.409335,
-        "nauc_map_at_1000_diff1": 0.380163,
+        "nauc_map_at_100_max": -0.030323,
+        "nauc_map_at_100_std": -0.409342,
+        "nauc_map_at_100_diff1": 0.38017,
+        "nauc_map_at_1000_max": -0.030323,
+        "nauc_map_at_1000_std": -0.409342,
+        "nauc_map_at_1000_diff1": 0.38017,
         "nauc_recall_at_1_max": -0.063381,
         "nauc_recall_at_1_std": -0.483753,
         "nauc_recall_at_1_diff1": 0.564813,
@@ -153,6 +153,6 @@
       }
     ]
   },
-  "evaluation_time": 14.993273973464966,
+  "evaluation_time": 32.33129405975342,
   "kg_co2_emissions": null
 }
