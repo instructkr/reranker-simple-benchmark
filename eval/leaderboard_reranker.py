@@ -22,9 +22,9 @@ def app():
     top_k_types = ["top1", "top5", "top10"]
 
     score_types = {
-        "top1": ["recall_at_1", "precision_at_1", "ndcg_at_1"],
-        "top5": ["recall_at_5", "precision_at_5", "ndcg_at_5"],
-        "top10": ["recall_at_10", "precision_at_10", "ndcg_at_10"],
+        "top1": ["mrr_at_1", "map_at_1", "ndcg_at_1"],
+        "top5": ["mrr_at_5", "map_at_5", "ndcg_at_5"],
+        "top10": ["mrr_at_10", "map_at_10", "ndcg_at_10"],
     }
 
     for task in tasks:
@@ -49,20 +49,12 @@ def app():
                                     # dev, test를 모두 가지고 있는 평가 데이터셋을 위함
                                     results[score] = (d["scores"]["dev"][0][score] + d["scores"]["test"][0][score]) / 2
 
-                            # f1 score 직접 계산
-                            f1_score = (
-                                2 * (results[score_types[top_k][1]] * results[score_types[top_k][0]]) / (results[score_types[top_k][1]]+ results[score_types[top_k][0]])
-                                if (results[score_types[top_k][1]]+ results[score_types[top_k][0]])> 0
-                                else 0
-                            )
-
                             data[task][top_k].append(
                                 (
                                     os.path.relpath(subdir, root_dir),
                                     results[score_types[top_k][0]],
                                     results[score_types[top_k][1]],
                                     results[score_types[top_k][2]],
-                                    f1_score,
                                 )
                             )
 
@@ -75,37 +67,35 @@ def app():
                 data[task][top_k],
                 columns=[
                     "Subdir",
-                    f"Recall_{top_k}",
-                    f"Precision_{top_k}",
+                    f"MRR_{top_k}",
+                    f"MAP_{top_k}",
                     f"NDCG_{top_k}",
-                    f"F1_{top_k}",
                 ],
             )
-            df = df.sort_values(by=f"Recall_{top_k}", ascending=False)
+            df = df.sort_values(by=f"MRR_{top_k}", ascending=False)
             st.dataframe(df, use_container_width=True)
 
             # 각 모델의 평균 점수 계산
-            for subdir, recall, precision, ndcg, f1 in data[task][top_k]:
+            for subdir, mrr, map_score, ndcg in data[task][top_k]:
                 if subdir not in avg_data:
                     avg_data[subdir] = {
-                        k: [[], [], [], []] for k in top_k_types
+                        k: [[], [], []] for k in top_k_types
                     } 
-                avg_data[subdir][top_k][0].append(recall)
-                avg_data[subdir][top_k][1].append(precision)
+                avg_data[subdir][top_k][0].append(mrr)
+                avg_data[subdir][top_k][1].append(map_score)
                 avg_data[subdir][top_k][2].append(ndcg)
-                avg_data[subdir][top_k][3].append(f1)
 
     # 각 모델 별 평균 점수 계산 후 출력
     st.markdown("# Average Scores")
     for top_k in top_k_types:
         avg_results = []
         for model in avg_data:
-            recall_avg = (
+            mrr_avg = (
                 sum(avg_data[model][top_k][0]) / len(avg_data[model][top_k][0])
                 if avg_data[model][top_k][0]
                 else 0
             )
-            precision_avg = (
+            map_avg = (
                 sum(avg_data[model][top_k][1]) / len(avg_data[model][top_k][1])
                 if avg_data[model][top_k][1]
                 else 0
@@ -115,24 +105,18 @@ def app():
                 if avg_data[model][top_k][2]
                 else 0
             )
-            f1_avg = (
-                sum(avg_data[model][top_k][3]) / len(avg_data[model][top_k][3])
-                if avg_data[model][top_k][3]
-                else 0
-            )
-            avg_results.append([model, recall_avg, precision_avg, ndcg_avg, f1_avg])
+            avg_results.append([model, mrr_avg, map_avg, ndcg_avg])
 
         avg_df = pd.DataFrame(
             avg_results,
             columns=[
                 "Model",
-                f"Average Recall_{top_k}",
-                f"Average Precision_{top_k}",
+                f"Average MRR_{top_k}",
+                f"Average MAP_{top_k}",
                 f"Average NDCG_{top_k}",
-                f"Average F1_{top_k}",
             ],
         )
-        avg_df = avg_df.sort_values(by=f"Average Recall_{top_k}", ascending=False)
+        avg_df = avg_df.sort_values(by=f"Average MRR_{top_k}", ascending=False)
         st.markdown(f"## {top_k.capitalize()} Average Scores")
         st.dataframe(avg_df, use_container_width=True)
 
