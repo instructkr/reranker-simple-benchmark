@@ -32,31 +32,7 @@ from mteb.tasks.Retrieval.multilingual.XPQARetrieval import _LANG_CONVERSION, _l
 from mteb.tasks.Retrieval.multilingual.BelebeleRetrieval import BelebeleRetrieval, _EVAL_SPLIT
 from mteb.evaluation.evaluators.RetrievalEvaluator import DenseRetrievalExactSearch
 
-
-class Qwen3RerankerWrapper:
-    def __init__(self, model_name: str, **kwargs):
-        self.model = CrossEncoder(model_name, **kwargs)
-        self.qwen3_instruction = "Given a web search query, retrieve relevant passages that answer the query"
-
-    def _format_query(self, query: str) -> str:
-        prefix = '<|im_start|>system\nJudge whether the Document meets the requirements based on the Query and the Instruct provided. Note that the answer can only be "yes" or "no".<|im_end|>\n<|im_start|>user\n'
-        return f"{prefix}<Instruct>: {self.qwen3_instruction}\n<Query>: {query}\n"
-
-    def _format_document(self, document: str) -> str:
-        suffix = "<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n"
-        return f"<Document>: {document}{suffix}"
-
-    def predict(self, sentences: List[Tuple[str, str]], **kwargs):
-        formatted_sentences = []
-        for query, document in sentences:
-            if document is None:
-                document = ""
-            formatted_query = self._format_query(query)
-            formatted_document = self._format_document(document)
-            formatted_sentences.append([formatted_query, formatted_document])
-        
-        return self.model.predict(formatted_sentences, **kwargs)
-
+from wrappers import Qwen3RerankerWrapper, MxbaiRerankerWrapper, BGEGemmaRerankerWrapper
 
 _original_load_results_file = DenseRetrievalExactSearch.load_results_file
 
@@ -211,14 +187,14 @@ BelebeleRetrieval.load_data = belebele_load_data
 XPQARetrieval.load_data = xpqa_load_data
 DenseRetrievalExactSearch.load_results_file = patched_load_results_file
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("main")
 
 
 def evaluate_reranker_model(model_name: str, gpu_id: int, tasks: List[str], previous_results_dir: Path, output_base_dir: Path, top_k: int, verbosity: int, batch_size: int):
     try:
-        device = torch.device(f"cuda:{str(gpu_id)}") 
-        torch.cuda.set_device(device)
+        device = f"cuda:{gpu_id}"
+        torch.cuda.set_device(gpu_id)
         os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_id)
         
         setproctitle(f"{model_name}-reranker-{gpu_id}")
@@ -230,14 +206,28 @@ def evaluate_reranker_model(model_name: str, gpu_id: int, tasks: List[str], prev
             model = Qwen3RerankerWrapper(
                 model_name,
                 trust_remote_code=True, 
-                model_kwargs={"torch_dtype": torch.bfloat16},
-                device=device
+                model_kwargs={"dtype": torch.bfloat16},
+                device=device,
+            )
+        elif "mxbai" in model_name.lower():
+            print(f"Using MxbaiRerankerWrapper for {model_name}")
+            model = MxbaiRerankerWrapper(
+                model_name,
+                device=device,
+                torch_dtype=torch.bfloat16,
+            )
+        elif "bge-reranker-v2-gemma" in model_name.lower():
+            print(f"Using BGEGemmaRerankerWrapper for {model_name}")
+            model = BGEGemmaRerankerWrapper(
+                model_name, 
+                use_bf16=True,
+                devices=[device],
             )
         else:
             model = CrossEncoder(
                 model_name, 
                 trust_remote_code=True, 
-                model_kwargs={"torch_dtype": torch.bfloat16},
+                model_kwargs={"dtype": torch.bfloat16},
                 device=device,
             )
         
@@ -265,7 +255,7 @@ def evaluate_reranker_model(model_name: str, gpu_id: int, tasks: List[str], prev
                     save_predictions=False, # 이건 항상 False로 설정
                     output_folder=str(output_dir),
                     previous_results=previous_results,
-                    batch_size=batch_size,
+                    encode_kwargs={"batch_size": batch_size},
                     verbosity=verbosity,
                 )
             else:
@@ -275,7 +265,7 @@ def evaluate_reranker_model(model_name: str, gpu_id: int, tasks: List[str], prev
                     top_k=top_k,
                     save_predictions=False, # 이건 항상 False로 설정
                     output_folder=str(output_dir),
-                    batch_size=batch_size,
+                    encode_kwargs={"batch_size": batch_size},
                     verbosity=verbosity,
                 )
                 
@@ -319,6 +309,8 @@ DEFAULT_MODEL_NAMES = [
     "tomaarsen/Qwen3-Reranker-8B-seq-cls",
     "Dongjin-kr/ko-reranker",
     "upskyy/ko-reranker-8k",
+    "mixedbread-ai/mxbai-rerank-large-v2",
+    "BAAI/bge-reranker-v2-gemma",
 ]
 DEFAULT_TASKS = [
     "Ko-StrategyQA",
