@@ -1,6 +1,6 @@
 """
 예시 script
-python evaluate_reranker_new.py \
+uv run evaluate_reranker.py \
     --model_names tomaarsen/Qwen3-Reranker-0.6B-seq-cls \
     --tasks Ko-StrategyQA AutoRAGRetrieval \
     --gpu_ids 0 1 \
