@@ -1,3 +1,15 @@
+"""
+예시 script
+python evaluate_reranker_new.py \
+    --model_names tomaarsen/Qwen3-Reranker-0.6B-seq-cls \
+    --tasks Ko-StrategyQA AutoRAGRetrieval \
+    --gpu_ids 0 1 \
+    --batch_size 2 \
+    --top_k 50 \
+    --verbosity 1
+"""
+
+
 import os
 import logging
 from multiprocessing import Process, current_process, Queue
@@ -6,7 +18,7 @@ import json
 import queue
 from pathlib import Path
 import argparse
-from typing import List
+from typing import List, Tuple
 
 import mteb
 from mteb import MTEB
@@ -20,7 +32,10 @@ from mteb.tasks.Retrieval.multilingual.XPQARetrieval import _LANG_CONVERSION, _l
 from mteb.tasks.Retrieval.multilingual.BelebeleRetrieval import BelebeleRetrieval, _EVAL_SPLIT
 from mteb.evaluation.evaluators.RetrievalEvaluator import DenseRetrievalExactSearch
 
+from wrappers import Qwen3RerankerWrapper, MxbaiRerankerWrapper, BGEGemmaRerankerWrapper
+
 _original_load_results_file = DenseRetrievalExactSearch.load_results_file
+
 
 def xpqa_load_data(self, **kwargs):
     if self.data_loaded:
@@ -93,6 +108,7 @@ def xpqa_load_data(self, **kwargs):
 
     self.data_loaded = True
 
+
 def belebele_load_data(self, **kwargs) -> None:
     if self.data_loaded:
         return
@@ -144,6 +160,7 @@ def belebele_load_data(self, **kwargs) -> None:
 
     self.data_loaded = True
 
+
 def patched_load_results_file(self):
     """JSONL 파일을 지원하는 패치된 load_results_file 메서드"""
     if self.previous_results.endswith('.jsonl'):
@@ -154,8 +171,9 @@ def patched_load_results_file(self):
                 query_id = data["query_id"]
                 relevance_ids = data["relevance_ids"]
                 
-                # 모든 문서에 동일한 점수 부여 (원래는 sorting을 위함)
-                doc_scores = {doc_id: 1.0 for doc_id in relevance_ids}
+                # 역순으로 점수를 부여하여 원래 순서를 보존
+                num_docs = len(relevance_ids)
+                doc_scores = {doc_id: float(num_docs - i) for i, doc_id in enumerate(relevance_ids)}
                 previous_results[query_id] = doc_scores
         
         assert isinstance(previous_results, dict)
@@ -164,35 +182,57 @@ def patched_load_results_file(self):
     else:
         return _original_load_results_file(self)
 
+
 BelebeleRetrieval.load_data = belebele_load_data
 XPQARetrieval.load_data = xpqa_load_data
 DenseRetrievalExactSearch.load_results_file = patched_load_results_file
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("main")
 
 
-def evaluate_reranker_model(model_name: str, gpu_id: int, tasks: List[str], previous_results_dir: Path, output_base_dir: Path, top_k: int, verbosity: int):
+def evaluate_reranker_model(model_name: str, gpu_id: int, tasks: List[str], previous_results_dir: Path, output_base_dir: Path, top_k: int, verbosity: int, batch_size: int):
     try:
-        device = torch.device(f"cuda:{str(gpu_id)}") 
-        torch.cuda.set_device(device)
+        device = f"cuda:{gpu_id}"
+        torch.cuda.set_device(gpu_id)
         os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_id)
         
         setproctitle(f"{model_name}-reranker-{gpu_id}")
         print(f"Running tasks: {tasks} / {model_name} on GPU {gpu_id} in process {current_process().name}")
         
-        model_path = Path(model_name)
-        output_dir = output_base_dir / model_path.parent.name / model_path.name
+        # Qwen 또는 PIXIE 모델인 경우 Qwen3RerankerWrapper 사용
+        if "qwen" in model_name.lower() or "PIXIE-Spell-Reranker-Preview-0.6B" in model_name:
+            print(f"Using Qwen3RerankerWrapper for {model_name}")
+            model = Qwen3RerankerWrapper(
+                model_name,
+                trust_remote_code=True, 
+                model_kwargs={"dtype": torch.bfloat16},
+                device=device,
+            )
+        elif "mxbai" in model_name.lower():
+            print(f"Using MxbaiRerankerWrapper for {model_name}")
+            model = MxbaiRerankerWrapper(
+                model_name,
+                device=device,
+                torch_dtype=torch.bfloat16,
+            )
+        elif "bge-reranker-v2-gemma" in model_name.lower():
+            print(f"Using BGEGemmaRerankerWrapper for {model_name}")
+            model = BGEGemmaRerankerWrapper(
+                model_name, 
+                use_bf16=True,
+                devices=[device],
+            )
+        else:
+            model = CrossEncoder(
+                model_name, 
+                trust_remote_code=True, 
+                model_kwargs={"dtype": torch.bfloat16},
+                device=device,
+            )
+        
+        output_dir = output_base_dir / model_name.replace("/", "_")
         output_dir.mkdir(parents=True, exist_ok=True)
-        
-        cross_encoder = CrossEncoder(
-            model_name, 
-            trust_remote_code=True, 
-            model_kwargs={"torch_dtype": torch.bfloat16},
-            device=device
-        )
-        
-        batch_size = 2048
         
         for task in tasks:
             print(f"Running task: {task} / {model_name} on GPU {gpu_id}")
@@ -210,22 +250,22 @@ def evaluate_reranker_model(model_name: str, gpu_id: int, tasks: List[str], prev
                 previous_results = str(previous_results_path)
 
                 evaluation.run(
-                    cross_encoder,
+                    model,
                     top_k=top_k,
-                    save_predictions=True,
+                    save_predictions=False, # 이건 항상 False로 설정
                     output_folder=str(output_dir),
                     previous_results=previous_results,
-                    batch_size=batch_size,
+                    encode_kwargs={"batch_size": batch_size},
                     verbosity=verbosity,
                 )
             else:
                 print(f"Previous results not found: {task}")
                 evaluation.run(
-                    cross_encoder,
+                    model,
                     top_k=top_k,
-                    save_predictions=True,
+                    save_predictions=False, # 이건 항상 False로 설정
                     output_folder=str(output_dir),
-                    batch_size=batch_size,
+                    encode_kwargs={"batch_size": batch_size},
                     verbosity=verbosity,
                 )
                 
@@ -233,7 +273,8 @@ def evaluate_reranker_model(model_name: str, gpu_id: int, tasks: List[str], prev
         print(f"Error in GPU {gpu_id} with model {model_name}: {ex}")
         traceback.print_exc()
 
-def worker(job_queue: Queue, gpu_queue: Queue, previous_results_dir: Path, output_base_dir: Path, top_k: int, verbosity: int):
+
+def worker(job_queue: Queue, gpu_queue: Queue, previous_results_dir: Path, output_base_dir: Path, top_k: int, verbosity: int, batch_size: int):
     """작업 큐와 GPU 큐에서 작업을 가져와 실행하는 워커 함수"""
     while True:
         try:
@@ -245,7 +286,7 @@ def worker(job_queue: Queue, gpu_queue: Queue, previous_results_dir: Path, outpu
         try:
             gpu_id = gpu_queue.get()
             print(f"Process {current_process().name}: Starting task: {task} / {model_name} on GPU {gpu_id}")
-            evaluate_reranker_model(model_name, gpu_id, [task], previous_results_dir, output_base_dir, top_k, verbosity)
+            evaluate_reranker_model(model_name, gpu_id, [task], previous_results_dir, output_base_dir, top_k, verbosity, batch_size)
             print(f"Process {current_process().name}: Finished task: {task} / {model_name} on GPU {gpu_id}")
         except Exception:
             print(f"!!!!!!!!!! Process {current_process().name}: Error during task: {task} / {model_name} on GPU {gpu_id} !!!!!!!!!!!")
@@ -260,17 +301,28 @@ DEFAULT_MODEL_NAMES = [
     "BAAI/bge-reranker-v2-m3",
     "dragonkue/bge-reranker-v2-m3-ko",
     "sigridjineth/ko-reranker-v1.1",
-    "sigridjineth/ko-reranker-v1.2-preview",
     "Alibaba-NLP/gte-multilingual-reranker-base",
-    "upskyy/ko-reranker-8k",
-    "Dongjin-kr/ko-reranker",
     "jinaai/jina-reranker-v2-base-multilingual",
+    "telepix/PIXIE-Spell-Reranker-Preview-0.6B",
+    "tomaarsen/Qwen3-Reranker-0.6B-seq-cls",
+    "tomaarsen/Qwen3-Reranker-4B-seq-cls",
+    "tomaarsen/Qwen3-Reranker-8B-seq-cls",
+    "Dongjin-kr/ko-reranker",
+    "upskyy/ko-reranker-8k",
+    "mixedbread-ai/mxbai-rerank-large-v2",
+    "BAAI/bge-reranker-v2-gemma",
 ]
 DEFAULT_TASKS = [
-    "Ko-StrategyQA", "AutoRAGRetrieval", "PublicHealthQA", "BelebeleRetrieval",
-    "XPQARetrieval", "MultiLongDocRetrieval", "MIRACLRetrieval", "MrTidyRetrieval"
+    "Ko-StrategyQA",
+    "AutoRAGRetrieval",
+    "PublicHealthQA",
+    "BelebeleRetrieval",
+    "XPQARetrieval",
+    "MultiLongDocRetrieval",
+    "MIRACLRetrieval",
+    "MrTidyRetrieval"
 ]
-DEFAULT_GPU_IDS = [0, 1, 2, 3, 4, 6, 7]
+DEFAULT_GPU_IDS = [0, 1, 2, 3, 4, 5, 6, 7]
 V2_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_PREVIOUS_RESULTS_DIR = V2_ROOT / "eval/results/stage1/top_1k_qrels"
 DEFAULT_OUTPUT_DIR = V2_ROOT / "eval/results/stage2"
@@ -299,13 +351,13 @@ def main():
         "--output_dir", type=str, default=str(DEFAULT_OUTPUT_DIR), help="2단계(리랭킹) 최종 결과를 저장할 디렉토리"
     )
     parser.add_argument(
-        "--model_dir", type=str, default=None, help="평가할 로컬 모델들이 저장된 디렉토리. 각 하위 디렉토리가 모델로 간주됩니다."
-    )
-    parser.add_argument(
         "--top_k", type=int, default=50, help="리랭킹에 사용할 상위 K개 문서 수"
     )
     parser.add_argument(
         "--verbosity", type=int, default=0, help="MTEB 로그 상세 수준 (0: 진행률 표시줄만, 1: 점수 표시, 2: 상세 정보, 3: 디버그용)"
+    )
+    parser.add_argument(
+        "--batch_size", type=int, default=2, help="리랭킹 배치 사이즈"
     )
     args = parser.parse_args()
 
@@ -332,7 +384,7 @@ def main():
     print(f"Total jobs to process: {total_jobs}")
 
     for _ in range(num_workers):
-        p = Process(target=worker, args=(job_queue, gpu_queue, previous_results_dir, output_dir, args.top_k, args.verbosity))
+        p = Process(target=worker, args=(job_queue, gpu_queue, previous_results_dir, output_dir, args.top_k, args.verbosity, args.batch_size))
         p.start()
         processes.append(p)
     
@@ -341,5 +393,7 @@ def main():
     
     print("All evaluation tasks completed.")
 
+
 if __name__ == "__main__":
     main()
+
