@@ -6,6 +6,7 @@ __all__ = [
     "BGEGemmaRerankerWrapper",
     "MxbaiRerankerWrapper",
     "Qwen3RerankerWrapper",
+    "JinaRerankerV3Wrapper",
 ]
 
 
@@ -80,3 +81,45 @@ class BGEGemmaRerankerWrapper(BaseRerankerWrapper):
     def predict(self, sentences: List[Tuple[str, str]], **kwargs) -> List[float]:
         scores = self.model.compute_score(sentences, **kwargs)
         return scores
+
+
+class JinaRerankerV3Wrapper(BaseRerankerWrapper):
+    def __init__(self, model_name: str, **kwargs):
+        from transformers import AutoModel
+        
+        device = kwargs.pop('device', 'cuda')
+        self.model = AutoModel.from_pretrained(
+            model_name,
+            trust_remote_code=True,
+            **kwargs
+        )
+        self.model.to(device)
+        self.model.eval()
+    
+    def predict(self, sentences: List[Tuple[str, str]], **kwargs) -> List[float]:
+        query_groups = {}
+        for i, item in enumerate(sentences):
+            query = item[0]
+            document = item[1] if len(item) > 1 and item[1] else ""
+            
+            if query not in query_groups:
+                query_groups[query] = []
+            query_groups[query].append((i, document))
+        
+        results = [0.0] * len(sentences)
+        
+        for query, doc_pairs in query_groups.items():
+            if not doc_pairs:
+                continue
+            
+            indices, docs = zip(*doc_pairs)
+            
+            rerank_results = self.model.rerank(
+                query=query,
+                documents=list(docs)
+            )
+            
+            for idx, result in zip(indices, rerank_results):
+                results[idx] = result['relevance_score']
+        
+        return results
