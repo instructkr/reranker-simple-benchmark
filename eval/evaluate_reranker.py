@@ -32,7 +32,7 @@ from mteb.tasks.Retrieval.multilingual.XPQARetrieval import _LANG_CONVERSION, _l
 from mteb.tasks.Retrieval.multilingual.BelebeleRetrieval import BelebeleRetrieval, _EVAL_SPLIT
 from mteb.evaluation.evaluators.RetrievalEvaluator import DenseRetrievalExactSearch
 
-from wrappers import Qwen3RerankerWrapper, MxbaiRerankerWrapper, BGEGemmaRerankerWrapper
+from wrappers import Qwen3RerankerWrapper, MxbaiRerankerWrapper, BGEGemmaRerankerWrapper, JinaRerankerV3Wrapper
 
 _original_load_results_file = DenseRetrievalExactSearch.load_results_file
 
@@ -222,6 +222,13 @@ def evaluate_reranker_model(model_name: str, gpu_id: int, tasks: List[str], prev
                 model_name, 
                 use_bf16=True,
                 devices=[device],
+            )
+        elif "jina-reranker-v3" in model_name.lower():
+            print(f"Using JinaRerankerV3Wrapper for {model_name}")
+            model = JinaRerankerV3Wrapper(
+                model_name,
+                device=device,
+                torch_dtype=torch.bfloat16,
             )
         else:
             model = CrossEncoder(
