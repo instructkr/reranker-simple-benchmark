@@ -49,7 +49,6 @@ top-k 10에서 가장 높은 성능을 보인 **Mecab** tokenizer를 사용하�
 - [WebFAQRetrieval](https://huggingface.co/datasets/PaDaS-Lab/webfaq-retrieval): 한국어 웹 FAQ 검색 - 10,000 queries
 
 > **Note**: 커스텀 데이터셋은 `eval/custom_mteb_tasks.py`에 MTEB Task 클래스로 구현되어 있습니다.
-> 자세한 내용은 [`docs/CUSTOM_TASKS_SOLUTION.md`](docs/CUSTOM_TASKS_SOLUTION.md)를 참조하세요.
 
 #### Evaluation Code
 ```bash
