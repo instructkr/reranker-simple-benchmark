@@ -32,27 +32,39 @@ top-k 10에서 가장 높은 성능을 보인 **Mecab** tokenizer를 사용하�
 
 ### Stage 2 Reranking
 #### Benchmark Datasets
-[MTEB](https://github.com/embeddings-benchmark/mteb)에 등록된 모든 Korean Retrieval Benchmark에 대한 평가를 진행하였습니다.
-- [Ko-StrategyQA](https://huggingface.co/datasets/taeminlee/Ko-StrategyQA): 한국어 ODQA multi-hop 검색 데이터셋 (StrategyQA 번역)
-- [AutoRAGRetrieval](https://huggingface.co/datasets/yjoonjang/markers_bm): 금융, 공공, 의료, 법률, 커머스 5개 분야에 대해, pdf를 파싱하여 구성한 한국어 문서 검색 데이터셋
-- [MIRACLRetrieval](https://huggingface.co/datasets/miracl/miracl): Wikipedia 기반의 한국어 문서 검색 데이터셋
-- [PublicHealthQA](https://huggingface.co/datasets/xhluca/publichealth-qa): 의료 및 공중보건 도메인에 대한 한국어 문서 검색 데이터셋
-- [BelebeleRetrieval](https://huggingface.co/datasets/facebook/belebele): FLORES-200 기반의 한국어 문서 검색 데이터셋
-- [MrTidyRetrieval](https://huggingface.co/datasets/mteb/mrtidy): Wikipedia 기반의 한국어 문서 검색 데이터셋
-- [MultiLongDocRetrieval](https://huggingface.co/datasets/Shitao/MLDR): 다양한 도메인의 한국어 장문 검색 데이터셋
-- [XPQARetrieval](https://huggingface.co/datasets/jinaai/xpqa): 다양한 도메인의 한국어 문서 검색 데이터셋
+**10개의 Korean Retrieval Benchmark** (총 18,945 queries)에 대한 평가를 진행하였습니다.
+
+**MTEB 데이터셋 (8개)**:
+- [Ko-StrategyQA](https://huggingface.co/datasets/taeminlee/Ko-StrategyQA): 한국어 ODQA multi-hop 검색 데이터셋 (StrategyQA 번역) - 592 queries
+- [AutoRAGRetrieval](https://huggingface.co/datasets/yjoonjang/markers_bm): 금융, 공공, 의료, 법률, 커머스 5개 분야 한국어 문서 검색 - 114 queries
+- [MIRACLRetrieval](https://huggingface.co/datasets/miracl/miracl): Wikipedia 기반 한국어 문서 검색 - 213 queries
+- [PublicHealthQA](https://huggingface.co/datasets/xhluca/publichealth-qa): 의료 및 공중보건 도메인 한국어 문서 검색 - 77 queries
+- [BelebeleRetrieval](https://huggingface.co/datasets/facebook/belebele): FLORES-200 기반 한국어 문서 검색 - 900 queries
+- [MrTidyRetrieval](https://huggingface.co/datasets/mteb/mrtidy): Wikipedia 기반 한국어 문서 검색 - 421 queries
+- [MultiLongDocRetrieval](https://huggingface.co/datasets/Shitao/MLDR): 다양한 도메인 한국어 장문 검색 - 200 queries
+- [XPQARetrieval](https://huggingface.co/datasets/jinaai/xpqa): 다양한 도메인 한국어 문서 검색 - 654 queries
+
+**커스텀 데이터셋 (2개)**:
+- [SQuADKorV1Retrieval](https://huggingface.co/datasets/yjoonjang/squad_kor_v1): 한국어 SQuAD v1.0 기반 검색 - 5,774 queries
+- [WebFAQRetrieval](https://huggingface.co/datasets/PaDaS-Lab/webfaq-retrieval): 한국어 웹 FAQ 검색 - 10,000 queries
+
+> **Note**: 커스텀 데이터셋은 `eval/custom_mteb_tasks.py`에 MTEB Task 클래스로 구현되어 있습니다.
 
 #### Evaluation Code
 ```bash
-cd eval
-uv run evaluate_reranker.py \
-	--model_names "my_reranker_model" \
-	--tasks "Ko-StrategyQA AutoRAGRetrieval MIRACLRetrieval PublicHealthQA BelebeleRetrieval MrTidyRetrieval MultiLongDocRetrieval XPQARetrieval" \
+# 모든 10개 데이터셋 평가 (DEFAULT_TASKS)
+uv run python eval/evaluate_reranker.py \
+	--model_names BAAI/bge-reranker-v2-m3 \
 	--gpu_ids 0 1 2 3 4 5 6 7 \
-	--previous_results_dir "results/stage1" \
-	--output_dir "results/stage2" \
+	--batch_size 2 \
 	--top_k 50 \
-	--verbosity 1 \
+	--verbosity 1
+
+# 또는 특정 데이터셋만 선택
+uv run python eval/evaluate_reranker.py \
+	--model_names "my_reranker_model" \
+	--tasks Ko-StrategyQA AutoRAGRetrieval SQuADKorV1Retrieval WebFAQRetrieval \
+	--gpu_ids 0 1 2 3 \
 	--batch_size 2
 ```
 

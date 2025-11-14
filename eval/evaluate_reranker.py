@@ -33,6 +33,7 @@ from mteb.tasks.Retrieval.multilingual.BelebeleRetrieval import BelebeleRetrieva
 from mteb.evaluation.evaluators.RetrievalEvaluator import DenseRetrievalExactSearch
 
 from wrappers import Qwen3RerankerWrapper, MxbaiRerankerWrapper, BGEGemmaRerankerWrapper, JinaRerankerV3Wrapper
+from custom_mteb_tasks import SQuADKorV1Retrieval, WebFAQRetrieval
 
 _original_load_results_file = DenseRetrievalExactSearch.load_results_file
 
@@ -244,11 +245,19 @@ def evaluate_reranker_model(model_name: str, gpu_id: int, tasks: List[str], prev
         for task in tasks:
             print(f"Running task: {task} / {model_name} on GPU {gpu_id}")
 
-            tasks_mteb = mteb.get_tasks(
-                tasks=[task],
-                languages=["kor-Kore", "kor-Hang", "kor_Hang"],
-                eval_splits=["test"] if task == "MultiLongDocRetrieval" else None,
-            )
+            # Handle custom tasks
+            if task == "SQuADKorV1Retrieval":
+                tasks_mteb = [SQuADKorV1Retrieval()]
+            elif task == "WebFAQRetrieval":
+                tasks_mteb = [WebFAQRetrieval()]
+            else:
+                # Standard MTEB tasks
+                tasks_mteb = mteb.get_tasks(
+                    tasks=[task],
+                    languages=["kor-Kore", "kor-Hang", "kor_Hang"],
+                    eval_splits=["test"] if task == "MultiLongDocRetrieval" else None,
+                )
+
             evaluation = MTEB(tasks=tasks_mteb)
 
             previous_results_path = previous_results_dir / (task + "_id.jsonl")
@@ -327,7 +336,9 @@ DEFAULT_TASKS = [
     "XPQARetrieval",
     "MultiLongDocRetrieval",
     "MIRACLRetrieval",
-    "MrTidyRetrieval"
+    "MrTidyRetrieval",
+    "SQuADKorV1Retrieval",  # Custom task
+    "WebFAQRetrieval"       # Custom task
 ]
 DEFAULT_GPU_IDS = [0, 1, 2, 3, 4, 5, 6, 7]
 V2_ROOT = Path(__file__).resolve().parents[1]
