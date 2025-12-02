@@ -77,54 +77,54 @@ uv run streamlit run leaderboard_reranker.py
 #### Results
 | Model                                  | Average MRR@1 | Average MAP@1 | Average NDCG@1 |
 |----------------------------------------|---------------|---------------|----------------|
-| Qwen3-Reranker-4B-seq-cls              | 0.7597        | 0.6036        | 0.6972         |
-| Qwen3-Reranker-8B-seq-cls              | 0.7488        | 0.6268        | 0.7253         |
-| bge-reranker-v2-m3                     | 0.7298        | 0.6054        | 0.6967         |
-| Qwen3-Reranker-0.6B-seq-cls            | 0.7278        | 0.5167        | 0.5937         |
-| mxbai-rerank-large-v2                  | 0.7119        | 0.6145        | 0.7083         |
-| PIXIE-Spell-Reranker-Preview-0.6B      | 0.7062        | 0.6100        | 0.6971         |
-| bge-reranker-v2-m3-ko                  | 0.7043        | 0.5689        | 0.6512         |
-| ko-reranker-8k                         | 0.7039        | 0.5289        | 0.6128         |
-| bge-reranker-v2-gemma                  | 0.7035        | 0.5932        | 0.7011         |
-| gte-multilingual-reranker-base         | 0.6904        | 0.5872        | 0.6791         |
-| ko-reranker-v1.1                       | 0.6696        | 0.5790        | 0.6662         |
-| ko-reranker                            | 0.6412        | 0.5113        | 0.5992         |
-| jina-reranker-v2-base-multilingual     | 0.6272        | 0.5341        | 0.6285         |
-| jina-reranker-v3                       | 0.6128        | 0.527         | 0.6129         |
+| Qwen3-Reranker-4B-seq-cls              | 0.7926        | 0.6517        | 0.7266         |
+| Qwen3-Reranker-8B-seq-cls              | 0.7810        | 0.6761        | 0.7549         |
+| Qwen3-Reranker-0.6B-seq-cls            | 0.7698        | 0.5583        | 0.6200         |
+| bge-reranker-v2-m3                     | 0.7632        | 0.6608        | 0.7338         |
+| ko-reranker-8k                         | 0.7469        | 0.5927        | 0.6598         |
+| bge-reranker-v2-m3-ko                  | 0.7462        | 0.6288        | 0.6946         |
+| mxbai-rerank-large-v2                  | 0.7457        | 0.6670        | 0.7420         |
+| PIXIE-Spell-Reranker-Preview-0.6B      | 0.7424        | 0.6633        | 0.7331         |
+| gte-multilingual-reranker-base         | 0.7158        | 0.6319        | 0.7054         |
+| ko-reranker-v1.1                       | 0.7094        | 0.6357        | 0.7054         |
+| jina-reranker-v3                       | 0.7013        | 0.6277        | 0.7013         |
+| bge-reranker-v2-gemma                  | 0.6953        | 0.6176        | 0.6931         |
+| ko-reranker                            | 0.6924        | 0.5823        | 0.6525         |
+| jina-reranker-v2-base-multilingual     | 0.6717        | 0.5966        | 0.6721         |
 
 | Model                                  | Average MRR@5 | Average MAP@5 | Average NDCG@5 |
 |----------------------------------------|---------------|---------------|----------------|
-| Qwen3-Reranker-4B-seq-cls              | 0.7991        | 0.7423        | 0.7757         |
-| Qwen3-Reranker-8B-seq-cls              | 0.7964        | 0.7578        | 0.7898         |
-| bge-reranker-v2-m3                     | 0.7777        | 0.7339        | 0.7669         |
-| Qwen3-Reranker-0.6B-seq-cls            | 0.7698        | 0.6601        | 0.7025         |
-| mxbai-rerank-large-v2                  | 0.7692        | 0.7363        | 0.7691         |
-| bge-reranker-v2-gemma                  | 0.7622        | 0.7304        | 0.7646         |
-| PIXIE-Spell-Reranker-Preview-0.6B      | 0.7610        | 0.7275        | 0.7594         |
-| gte-multilingual-reranker-base         | 0.7548        | 0.7156        | 0.7519         |
-| bge-reranker-v2-m3-ko                  | 0.7543        | 0.6935        | 0.7290         |
-| ko-reranker-8k                         | 0.7486        | 0.6655        | 0.7050         |
-| ko-reranker-v1.1                       | 0.7306        | 0.6957        | 0.7310         |
-| ko-reranker                            | 0.6945        | 0.6459        | 0.6817         |
-| jina-reranker-v2-base-multilingual     | 0.6888        | 0.6585        | 0.6919         |
-| jina-reranker-v3                       | 0.6815        | 0.6309        | 0.6712         |
+| Qwen3-Reranker-4B-seq-cls              | 0.8283        | 0.7732        | 0.8037         |
+| Qwen3-Reranker-8B-seq-cls              | 0.8243        | 0.7892        | 0.8176         |
+| bge-reranker-v2-m3                     | 0.8075        | 0.7707        | 0.7998         |
+| Qwen3-Reranker-0.6B-seq-cls            | 0.8059        | 0.6903        | 0.7305         |
+| mxbai-rerank-large-v2                  | 0.7993        | 0.7724        | 0.8014         |
+| PIXIE-Spell-Reranker-Preview-0.6B      | 0.7926        | 0.7645        | 0.7927         |
+| bge-reranker-v2-m3-ko                  | 0.7906        | 0.7367        | 0.7680         |
+| ko-reranker-8k                         | 0.7869        | 0.7119        | 0.7470         |
+| gte-multilingual-reranker-base         | 0.7765        | 0.7443        | 0.7769         |
+| ko-reranker-v1.1                       | 0.7653        | 0.7367        | 0.7677         |
+| jina-reranker-v3                       | 0.7615        | 0.7356        | 0.7680         |
+| bge-reranker-v2-gemma                  | 0.7494        | 0.7268        | 0.7561         |
+| ko-reranker                            | 0.7407        | 0.6984        | 0.7300         |
+| jina-reranker-v2-base-multilingual     | 0.7289        | 0.7042        | 0.7339         |
 
 | Model                                  | Average MRR@10 | Average MAP@10 | Average NDCG@10 |
 |----------------------------------------|----------------|----------------|-----------------|
-| Qwen3-Reranker-4B-seq-cls              | 0.8039         | 0.7547         | 0.7926          |
-| Qwen3-Reranker-8B-seq-cls              | 0.8000         | 0.7698         | 0.8044          |
-| bge-reranker-v2-m3                     | 0.7821         | 0.7462         | 0.7832          |
-| mxbai-rerank-large-v2                  | 0.7752         | 0.7509         | 0.7901          |
-| Qwen3-Reranker-0.6B-seq-cls            | 0.7740         | 0.6754         | 0.7247          |
-| bge-reranker-v2-gemma                  | 0.7673         | 0.7450         | 0.7837          |
-| PIXIE-Spell-Reranker-Preview-0.6B      | 0.7661         | 0.7405         | 0.7775          |
-| bge-reranker-v2-m3-ko                  | 0.7605         | 0.7074         | 0.7509          |
-| gte-multilingual-reranker-base         | 0.7598         | 0.7288         | 0.7705          |
-| ko-reranker-8k                         | 0.7544         | 0.6795         | 0.7267          |
-| ko-reranker-v1.1                       | 0.7361         | 0.7094         | 0.7508          |
-| ko-reranker                            | 0.7021         | 0.6610         | 0.7055          |
-| jina-reranker-v2-base-multilingual     | 0.6956         | 0.6725         | 0.7129          |
-| jina-reranker-v3                       | 0.6902         | 0.6481         | 0.7002          |
+| Qwen3-Reranker-4B-seq-cls              | 0.8324         | 0.7836         | 0.8181          |
+| Qwen3-Reranker-8B-seq-cls              | 0.8275         | 0.7991         | 0.8302          |
+| bge-reranker-v2-m3                     | 0.8113         | 0.7810         | 0.8137          |
+| Qwen3-Reranker-0.6B-seq-cls            | 0.8095         | 0.7034         | 0.7503          |
+| mxbai-rerank-large-v2                  | 0.8044         | 0.7845         | 0.8191          |
+| PIXIE-Spell-Reranker-Preview-0.6B      | 0.7971         | 0.7754         | 0.8082          |
+| bge-reranker-v2-m3-ko                  | 0.7960         | 0.7482         | 0.7866          |
+| ko-reranker-8k                         | 0.7919         | 0.7698         | 0.7654          |
+| gte-multilingual-reranker-base         | 0.7813         | 0.7754         | 0.7937          |
+| ko-reranker-v1.1                       | 0.7702         | 0.7481         | 0.7847          |
+| jina-reranker-v3                       | 0.7673         | 0.7488         | 0.7886          |
+| bge-reranker-v2-gemma                  | 0.7553         | 0.7394         | 0.7751          |
+| ko-reranker                            | 0.7472         | 0.7110         | 0.7502          |
+| jina-reranker-v2-base-multilingual     | 0.7349         | 0.7160         | 0.7521          |
 
 <!-- ## Contributions
 

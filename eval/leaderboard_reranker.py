@@ -14,10 +14,12 @@ def app():
         "AutoRAGRetrieval",
         "PublicHealthQA",
         "BelebeleRetrieval",
-		"MIRACLRetrieval",
-		"MrTidyRetrieval",
-		"MultiLongDocRetrieval",
-		"XPQARetrieval"
+        "MIRACLRetrieval",
+        "MrTidyRetrieval",
+        "MultiLongDocRetrieval",
+        "XPQARetrieval",
+        "SQuADKorV1Retrieval",
+        "WebFAQRetrieval",
     ]
     top_k_types = ["top1", "top5", "top10"]
 

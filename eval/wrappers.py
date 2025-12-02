@@ -1,14 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import List, Tuple
 
-__all__ = [
-    "BaseRerankerWrapper",
-    "BGEGemmaRerankerWrapper",
-    "MxbaiRerankerWrapper",
-    "Qwen3RerankerWrapper",
-    "JinaRerankerV3Wrapper",
-]
-
 
 class BaseRerankerWrapper(ABC):
     """
@@ -98,15 +90,15 @@ class JinaRerankerV3Wrapper(BaseRerankerWrapper):
     
     def predict(self, sentences: List[Tuple[str, str]], **kwargs) -> List[float]:
         query_groups = {}
-        for i, item in enumerate(sentences):
+        for idx, item in enumerate(sentences):
             query = item[0]
             document = item[1] if len(item) > 1 and item[1] else ""
             
             if query not in query_groups:
                 query_groups[query] = []
-            query_groups[query].append((i, document))
+            query_groups[query].append((idx, document))
         
-        results = [0.0] * len(sentences)
+        scores = [0.0] * len(sentences)
         
         for query, doc_pairs in query_groups.items():
             if not doc_pairs:
@@ -114,12 +106,13 @@ class JinaRerankerV3Wrapper(BaseRerankerWrapper):
             
             indices, docs = zip(*doc_pairs)
             
-            rerank_results = self.model.rerank(
+            results = self.model.rerank(
                 query=query,
                 documents=list(docs)
             )
             
-            for idx, result in zip(indices, rerank_results):
-                results[idx] = result['relevance_score']
+            for result in results:
+                idx = indices[result['index']]
+                scores[idx] = result['relevance_score']
         
-        return results
+        return scores

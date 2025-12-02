@@ -239,7 +239,7 @@ def evaluate_reranker_model(model_name: str, gpu_id: int, tasks: List[str], prev
                 device=device,
             )
         
-        output_dir = output_base_dir / model_name.replace("/", "_")
+        output_dir = output_base_dir / model_name
         output_dir.mkdir(parents=True, exist_ok=True)
         
         for task in tasks:
@@ -319,6 +319,7 @@ DEFAULT_MODEL_NAMES = [
     "sigridjineth/ko-reranker-v1.1",
     "Alibaba-NLP/gte-multilingual-reranker-base",
     "jinaai/jina-reranker-v2-base-multilingual",
+    "jinaai/jina-reranker-v3",
     "telepix/PIXIE-Spell-Reranker-Preview-0.6B",
     "tomaarsen/Qwen3-Reranker-0.6B-seq-cls",
     "tomaarsen/Qwen3-Reranker-4B-seq-cls",
