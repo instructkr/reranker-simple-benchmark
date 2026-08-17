@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.55,
+  "ndcg_at_5": 0.653405,
+  "ndcg_at_10": 0.6719299999999999,
+  "map_at_10": 0.631285,
+  "mrr_at_10": 0.6312817460317461,
+  "recall_at_10": 0.8,
+  "main_score": 0.6719299999999999,
+  "_model": "nvidia/llama-nemotron-rerank-1b-v2",
+  "_task": "MultiLongDocRetrieval",
+  "_split": "dev+test",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

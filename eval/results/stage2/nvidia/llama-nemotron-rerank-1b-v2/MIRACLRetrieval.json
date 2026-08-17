@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.73709,
+  "ndcg_at_5": 0.77491,
+  "ndcg_at_10": 0.81818,
+  "map_at_10": 0.73847,
+  "mrr_at_10": 0.8332271406215067,
+  "recall_at_10": 0.92592,
+  "main_score": 0.81818,
+  "_model": "nvidia/llama-nemotron-rerank-1b-v2",
+  "_task": "MIRACLRetrieval",
+  "_split": "dev",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

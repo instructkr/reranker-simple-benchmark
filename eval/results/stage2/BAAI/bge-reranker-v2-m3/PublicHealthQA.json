@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.72727,
+  "ndcg_at_5": 0.82681,
+  "ndcg_at_10": 0.84753,
+  "map_at_10": 0.80752,
+  "mrr_at_10": 0.8161770768913627,
+  "recall_at_10": 0.97403,
+  "main_score": 0.84753,
+  "_model": "BAAI/bge-reranker-v2-m3",
+  "_task": "PublicHealthQA",
+  "_split": "test",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.75325,
+  "ndcg_at_5": 0.83828,
+  "ndcg_at_10": 0.86848,
+  "map_at_10": 0.83109,
+  "mrr_at_10": 0.8397495361781077,
+  "recall_at_10": 0.98701,
+  "main_score": 0.86848,
+  "_model": "tomaarsen/Qwen3-Reranker-4B-seq-cls",
+  "_task": "PublicHealthQA",
+  "_split": "test",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

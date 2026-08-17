@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.65796,
+  "ndcg_at_5": 0.77793,
+  "ndcg_at_10": 0.79747,
+  "map_at_10": 0.74484,
+  "mrr_at_10": 0.7622271236285488,
+  "recall_at_10": 0.93745,
+  "main_score": 0.79747,
+  "_model": "nlpai-lab/LAMAR-600m",
+  "_task": "MrTidyRetrieval",
+  "_split": "test",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

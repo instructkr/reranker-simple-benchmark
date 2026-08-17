@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.92761,
+  "ndcg_at_5": 0.96695,
+  "ndcg_at_10": 0.96807,
+  "map_at_10": null,
+  "mrr_at_10": null,
+  "recall_at_10": null,
+  "main_score": 0.96807,
+  "_model": "mixedbread-ai/mxbai-rerank-large-v2",
+  "_task": "SQuADKorV1Retrieval",
+  "_split": "test",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

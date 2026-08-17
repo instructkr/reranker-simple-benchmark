@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.47031,
+  "ndcg_at_5": 0.64154,
+  "ndcg_at_10": 0.67756,
+  "map_at_10": 0.6033,
+  "mrr_at_10": 0.7103966368811975,
+  "recall_at_10": 0.88361,
+  "main_score": 0.67756,
+  "_model": "dragonkue/bge-reranker-v2-m3-ko",
+  "_task": "MrTidyRetrieval",
+  "_split": "test",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

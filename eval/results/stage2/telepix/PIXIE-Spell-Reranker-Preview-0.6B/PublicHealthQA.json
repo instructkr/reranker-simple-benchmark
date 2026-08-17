@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.75325,
+  "ndcg_at_5": 0.82374,
+  "ndcg_at_10": 0.8534,
+  "map_at_10": 0.81624,
+  "mrr_at_10": 0.8171201814058957,
+  "recall_at_10": 0.97403,
+  "main_score": 0.8534,
+  "_model": "telepix/PIXIE-Spell-Reranker-Preview-0.6B",
+  "_task": "PublicHealthQA",
+  "_split": "test",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

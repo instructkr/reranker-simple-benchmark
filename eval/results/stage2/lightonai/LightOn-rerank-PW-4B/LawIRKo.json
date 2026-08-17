@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.61914,
+  "ndcg_at_5": 0.77757,
+  "ndcg_at_10": 0.79384,
+  "map_at_10": 0.74185,
+  "mrr_at_10": 0.7565994636230392,
+  "recall_at_10": 0.95313,
+  "main_score": 0.79384,
+  "_model": "lightonai/LightOn-rerank-PW-4B",
+  "_task": "LawIRKo",
+  "_split": "test",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

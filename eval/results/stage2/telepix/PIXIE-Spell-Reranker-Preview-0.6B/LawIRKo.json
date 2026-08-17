@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.40977,
+  "ndcg_at_5": 0.57125,
+  "ndcg_at_10": 0.60421,
+  "map_at_10": 0.53827,
+  "mrr_at_10": 0.5409412881065983,
+  "recall_at_10": 0.8128,
+  "main_score": 0.60421,
+  "_model": "telepix/PIXIE-Spell-Reranker-Preview-0.6B",
+  "_task": "LawIRKo",
+  "_split": "test",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

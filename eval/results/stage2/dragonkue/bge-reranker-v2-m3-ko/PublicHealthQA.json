@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.77922,
+  "ndcg_at_5": 0.84436,
+  "ndcg_at_10": 0.87081,
+  "map_at_10": 0.83849,
+  "mrr_at_10": 0.8384869099154814,
+  "recall_at_10": 0.97403,
+  "main_score": 0.87081,
+  "_model": "dragonkue/bge-reranker-v2-m3-ko",
+  "_task": "PublicHealthQA",
+  "_split": "test",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

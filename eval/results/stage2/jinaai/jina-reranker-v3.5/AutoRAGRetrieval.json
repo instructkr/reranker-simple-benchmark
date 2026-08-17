@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.95614,
+  "ndcg_at_5": 0.98381,
+  "ndcg_at_10": 0.98381,
+  "map_at_10": 0.97807,
+  "mrr_at_10": 0.9780701754385965,
+  "recall_at_10": 1.0,
+  "main_score": 0.98381,
+  "_model": "jinaai/jina-reranker-v3.5",
+  "_task": "AutoRAGRetrieval",
+  "_split": "test",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

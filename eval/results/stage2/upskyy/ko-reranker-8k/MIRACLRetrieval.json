@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.51174,
+  "ndcg_at_5": 0.66402,
+  "ndcg_at_10": 0.72487,
+  "map_at_10": 0.61689,
+  "mrr_at_10": 0.8809710112527014,
+  "recall_at_10": 0.92001,
+  "main_score": 0.72487,
+  "_model": "upskyy/ko-reranker-8k",
+  "_task": "MIRACLRetrieval",
+  "_split": "dev",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

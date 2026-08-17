@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.47067,
+  "ndcg_at_5": 0.64502,
+  "ndcg_at_10": 0.67213,
+  "map_at_10": 0.60811,
+  "mrr_at_10": 0.6102568728866792,
+  "recall_at_10": 0.87146,
+  "main_score": 0.67213,
+  "_model": "dragonkue/bge-reranker-v2-m3-ko",
+  "_task": "LawIRKo",
+  "_split": "test",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.76995,
+  "ndcg_at_5": 0.80609,
+  "ndcg_at_10": 0.84489,
+  "map_at_10": 0.77055,
+  "mrr_at_10": 0.8650458305387883,
+  "recall_at_10": 0.94593,
+  "main_score": 0.84489,
+  "_model": "telepix/PIXIE-Spell-Reranker-Preview-0.6B",
+  "_task": "MIRACLRetrieval",
+  "_split": "dev",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

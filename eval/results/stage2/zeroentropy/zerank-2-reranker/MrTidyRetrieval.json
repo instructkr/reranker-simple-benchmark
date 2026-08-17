@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.65796,
+  "ndcg_at_5": 0.78544,
+  "ndcg_at_10": 0.80275,
+  "map_at_10": 0.74869,
+  "mrr_at_10": 0.7712051804094558,
+  "recall_at_10": 0.94339,
+  "main_score": 0.80275,
+  "_model": "zeroentropy/zerank-2-reranker",
+  "_task": "MrTidyRetrieval",
+  "_split": "test",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.77922,
+  "ndcg_at_5": 0.83916,
+  "ndcg_at_10": 0.86931,
+  "map_at_10": 0.83346,
+  "mrr_at_10": 0.8453617810760667,
+  "recall_at_10": 0.98701,
+  "main_score": 0.86931,
+  "_model": "lightonai/LightOn-rerank-PW-4B",
+  "_task": "PublicHealthQA",
+  "_split": "test",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

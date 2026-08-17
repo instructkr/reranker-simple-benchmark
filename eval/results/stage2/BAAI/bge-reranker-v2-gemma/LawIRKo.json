@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.6082,
+  "ndcg_at_5": 0.73808,
+  "ndcg_at_10": 0.75722,
+  "map_at_10": 0.71006,
+  "mrr_at_10": 0.7144976589194945,
+  "recall_at_10": 0.90401,
+  "main_score": 0.75722,
+  "_model": "BAAI/bge-reranker-v2-gemma",
+  "_task": "LawIRKo",
+  "_split": "test",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

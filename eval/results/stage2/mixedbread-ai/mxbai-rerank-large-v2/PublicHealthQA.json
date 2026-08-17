@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.77922,
+  "ndcg_at_5": 0.84616,
+  "ndcg_at_10": 0.87724,
+  "map_at_10": 0.84282,
+  "mrr_at_10": 0.8503916718202433,
+  "recall_at_10": 0.98701,
+  "main_score": 0.87724,
+  "_model": "mixedbread-ai/mxbai-rerank-large-v2",
+  "_task": "PublicHealthQA",
+  "_split": "test",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

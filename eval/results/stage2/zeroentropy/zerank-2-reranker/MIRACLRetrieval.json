@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.70423,
+  "ndcg_at_5": 0.75254,
+  "ndcg_at_10": 0.80034,
+  "map_at_10": 0.71824,
+  "mrr_at_10": 0.811742678291974,
+  "recall_at_10": 0.91762,
+  "main_score": 0.80034,
+  "_model": "zeroentropy/zerank-2-reranker",
+  "_task": "MIRACLRetrieval",
+  "_split": "dev",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

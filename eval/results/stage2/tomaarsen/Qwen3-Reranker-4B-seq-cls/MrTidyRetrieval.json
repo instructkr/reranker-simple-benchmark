@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.71971,
+  "ndcg_at_5": 0.81514,
+  "ndcg_at_10": 0.83208,
+  "map_at_10": 0.78471,
+  "mrr_at_10": 0.8045781020246578,
+  "recall_at_10": 0.95566,
+  "main_score": 0.83208,
+  "_model": "tomaarsen/Qwen3-Reranker-4B-seq-cls",
+  "_task": "MrTidyRetrieval",
+  "_split": "test",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

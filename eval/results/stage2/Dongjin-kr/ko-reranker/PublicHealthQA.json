@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.62338,
+  "ndcg_at_5": 0.7457,
+  "ndcg_at_10": 0.76752,
+  "map_at_10": 0.72204,
+  "mrr_at_10": 0.7826427540713256,
+  "recall_at_10": 0.90909,
+  "main_score": 0.76752,
+  "_model": "Dongjin-kr/ko-reranker",
+  "_task": "PublicHealthQA",
+  "_split": "test",
+  "_max_length": 512,
+  "_neg_top_k": 50
+}

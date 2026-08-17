@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.66938,
+  "ndcg_at_5": 0.79868,
+  "ndcg_at_10": 0.81301,
+  "map_at_10": 0.76935,
+  "mrr_at_10": 0.7775280773737131,
+  "recall_at_10": 0.94752,
+  "main_score": 0.81301,
+  "_model": "mixedbread-ai/mxbai-rerank-large-v2",
+  "_task": "LawIRKo",
+  "_split": "test",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

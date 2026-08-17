@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.20750000000000002,
+  "ndcg_at_5": 0.317765,
+  "ndcg_at_10": 0.36514,
+  "map_at_10": 0.30616,
+  "mrr_at_10": 0.30680555555555555,
+  "recall_at_10": 0.5575,
+  "main_score": 0.36514,
+  "_model": "cross-encoder/ettin-reranker-1b-v1",
+  "_task": "MultiLongDocRetrieval",
+  "_split": "dev+test",
+  "_max_length": 7999,
+  "_neg_top_k": 50
+}

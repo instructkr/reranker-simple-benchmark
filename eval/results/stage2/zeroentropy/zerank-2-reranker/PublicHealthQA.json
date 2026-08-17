@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.74026,
+  "ndcg_at_5": 0.83372,
+  "ndcg_at_10": 0.86456,
+  "map_at_10": 0.8257,
+  "mrr_at_10": 0.8257008864151721,
+  "recall_at_10": 0.98701,
+  "main_score": 0.86456,
+  "_model": "zeroentropy/zerank-2-reranker",
+  "_task": "PublicHealthQA",
+  "_split": "test",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

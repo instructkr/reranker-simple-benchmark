@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.5549999999999999,
+  "ndcg_at_5": 0.6525350000000001,
+  "ndcg_at_10": 0.678655,
+  "map_at_10": 0.637345,
+  "mrr_at_10": 0.6377073412698413,
+  "recall_at_10": 0.81,
+  "main_score": 0.678655,
+  "_model": "mixedbread-ai/mxbai-rerank-large-v2",
+  "_task": "MultiLongDocRetrieval",
+  "_split": "dev+test",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

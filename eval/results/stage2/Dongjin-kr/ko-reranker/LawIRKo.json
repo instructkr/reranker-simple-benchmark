@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.56217,
+  "ndcg_at_5": 0.71221,
+  "ndcg_at_10": 0.73426,
+  "map_at_10": 0.6792,
+  "mrr_at_10": 0.6842427016648179,
+  "recall_at_10": 0.90598,
+  "main_score": 0.73426,
+  "_model": "Dongjin-kr/ko-reranker",
+  "_task": "LawIRKo",
+  "_split": "test",
+  "_max_length": 512,
+  "_neg_top_k": 50
+}

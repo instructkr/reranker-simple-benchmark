@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.81588,
+  "ndcg_at_5": 0.84012,
+  "ndcg_at_10": 0.85665,
+  "map_at_10": 0.81902,
+  "mrr_at_10": 0.86834311990562,
+  "recall_at_10": 0.91273,
+  "main_score": 0.85665,
+  "_model": "lightonai/LightOn-rerank-PW-4B",
+  "_task": "Ko-StrategyQA",
+  "_split": "dev",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

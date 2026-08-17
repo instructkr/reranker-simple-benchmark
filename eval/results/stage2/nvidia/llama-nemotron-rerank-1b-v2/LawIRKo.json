@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.6037,
+  "ndcg_at_5": 0.73081,
+  "ndcg_at_10": 0.7527,
+  "map_at_10": 0.70489,
+  "mrr_at_10": 0.7052927130249612,
+  "recall_at_10": 0.90233,
+  "main_score": 0.7527,
+  "_model": "nvidia/llama-nemotron-rerank-1b-v2",
+  "_task": "LawIRKo",
+  "_split": "test",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

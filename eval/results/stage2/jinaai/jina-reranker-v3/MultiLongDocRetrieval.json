@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.2625,
+  "ndcg_at_5": 0.37961999999999996,
+  "ndcg_at_10": 0.43069,
+  "map_at_10": 0.36604000000000003,
+  "mrr_at_10": 0.36603968253968255,
+  "recall_at_10": 0.6425,
+  "main_score": 0.43069,
+  "_model": "jinaai/jina-reranker-v3",
+  "_task": "MultiLongDocRetrieval",
+  "_split": "dev+test",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}
