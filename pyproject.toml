@@ -13,7 +13,7 @@ dependencies = [
     "mteb>=2.18.0",
     "mxbai-rerank>=0.1.6",
     "sentence-transformers>=5.0",
-    "transformers>=5.0",
+    "transformers>=4.40.0,<6.0.0",
     "torch>=2.5.1",
     "torchvision",
     "peft>=0.20.0",
@@ -22,3 +22,11 @@ dependencies = [
     "setproctitle>=1.3.7",
     "streamlit==1.39.0",
 ]
+
+[project.optional-dependencies]
+transformers-v4 = ["transformers<5"]
+transformers-v5 = ["transformers>=5"]
+
+[tool.uv]
+# 단일 universal lock 에서 두 extra 가 하나의 transformers 버전으로 합쳐지지 않도록 분기.
+conflicts = [[{ extra = "transformers-v4" }, { extra = "transformers-v5" }]]
