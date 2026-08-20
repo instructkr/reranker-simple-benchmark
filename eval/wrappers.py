@@ -1,3 +1,4 @@
+import inspect
 from abc import ABC, abstractmethod
 from typing import List, Tuple
 
@@ -127,6 +128,14 @@ class JinaRerankerV3Wrapper(BaseRerankerWrapper):
 
         scores = [0.0] * len(sentences)
 
+        # rerank 내부 문서 절단 길이를 max_doc_tokens 로 명시적으로 넘긴다.
+        # v3: rerank 기본값이 max_doc_length=2048 이라, 넘기지 않으면 wrapper 가 8192 로 미리
+        #     잘라도 내부에서 2048 로 재절단돼 기록된 _max_length=8192 와 불일치한다.
+        # v3.5: max_doc_length 인자 자체가 없어 넘기면 TypeError 이므로, 시그니처 지원 시에만 전달.
+        rerank_kwargs = {}
+        if "max_doc_length" in inspect.signature(self.model.rerank).parameters:
+            rerank_kwargs["max_doc_length"] = self.max_doc_tokens
+
         for query, doc_pairs in query_groups.items():
             if not doc_pairs:
                 continue
@@ -135,7 +144,8 @@ class JinaRerankerV3Wrapper(BaseRerankerWrapper):
 
             results = self.model.rerank(
                 query=query,
-                documents=list(docs)
+                documents=list(docs),
+                **rerank_kwargs
             )
 
             for result in results:

@@ -93,7 +93,6 @@ uv run streamlit run leaderboard_reranker.py
 | tomaarsen/Qwen3-Reranker-0.6B-seq-cls | 596M | 0.7708 | 0.8435 | 0.8585 |
 | nvidia/llama-nemotron-rerank-1b-v2 | 1.2B | 0.7693 | 0.8354 | 0.8522 |
 | nlpai-lab/LAMAR-600m | 568M | 0.7509 | 0.8240 | 0.8406 |
-| jinaai/jina-reranker-v3 | 597M | 0.7446 | 0.8158 | 0.8361 |
 | dragonkue/bge-reranker-v2-m3-ko | 568M | 0.7281 | 0.8060 | 0.8263 |
 | BAAI/bge-reranker-v2-gemma | 2.5B | 0.7383 | 0.8007 | 0.8186 |
 | upskyy/ko-reranker-8k | 568M | 0.6906 | 0.7883 | 0.8085 |
@@ -101,14 +100,14 @@ uv run streamlit run leaderboard_reranker.py
 | telepix/PIXIE-Spell-Reranker-Preview-0.6B | 596M | 0.6927 | 0.7599 | 0.7806 |
 | cross-encoder/ettin-reranker-1b-v1 | 1.0B | 0.5686 | 0.6605 | 0.6901 |
 
-> `jinaai/jina-reranker-v3.5` 는 **listwise** reranker 로, 장문(`MultiLongDocRetrieval`)의 51개 후보를 한 컨텍스트로 재랭킹할 때 **token length OOD**(8192 tractable 시간 내 완료 불가, 16시간+ 소요)가 발생해 위 9-subset 평가에서 제외됩니다. 아래 8-subset 표에서 비교하세요.
+> `jinaai/jina-reranker-v3` 와 `jinaai/jina-reranker-v3.5` 는 **listwise** reranker 로, 장문(`MultiLongDocRetrieval`)에서 다른 모델과 **동일 조건(8192)으로 공정 비교가 불가능**하여 두 모델 모두 MLDR 을 N/A 로 두고 위 9-subset 평가에서 제외합니다. 실제 후보셋(정답 ∪ BM25 top-50 ≈ 51개, 문서 토큰 길이 mean ≈ 8000)을 8192 로 재랭킹하면 51개가 단일 컨텍스트에 들어가지 않아 블록으로 분할되는데, **블록을 키우면 OOM**(80GB GPU 에서도 첫 블록 ≈ 126k 토큰), **블록을 줄이면**(예: 블록당 2문서) jina 의 listwise 상호작용이 사실상 사라져 pointwise 에 가까워지고 점수가 임의의 블록 크기(다른 모델엔 없는 노브)에 의존하게 됩니다. 즉 장문 task 는 listwise reranker 의 **token-length OOD** 로 공정 측정이 원천적으로 어렵습니다. 아래 8-subset 표에서 비교하세요.
 
-**모델 크기 vs. 성능 (9-subset)** — x축 파라미터 수(log), y축 9-subset mean NDCG@10. jina-reranker-v3.5 는 제외.
+**모델 크기 vs. 성능 (9-subset)** — x축 파라미터 수(log), y축 9-subset mean NDCG@10. jina-reranker-v3/v3.5 는 제외.
 
 ![Reranker model size vs. NDCG@10 (official kMTEB 9 subsets)](assets/model_size_vs_ndcg9.png)
 
 #### Results — MLDR 제외 (8 subsets · listwise / long-doc OOD 공정 비교)
-장문(`MultiLongDocRetrieval`)을 제외한 **8개 공통 subset** 기준 mean NDCG@1/5/10 (NDCG@10 내림차순). listwise 모델(`jina-reranker-v3.5`)을 포함해 **모든 모델을 동일 기준으로 비교**합니다. (MLDR 이 가장 어려운 task 라 전 모델의 mean 이 9-subset 대비 상승합니다 — 표 간 절대값 비교 금지.)
+장문(`MultiLongDocRetrieval`)을 제외한 **8개 공통 subset** 기준 mean NDCG@1/5/10 (NDCG@10 내림차순). listwise 모델(`jina-reranker-v3`, `jina-reranker-v3.5`)을 포함해 **모든 모델을 동일 기준으로 비교**합니다. (MLDR 이 가장 어려운 task 라 전 모델의 mean 이 9-subset 대비 상승합니다 — 표 간 절대값 비교 금지.)
 
 | Model | Params | Mean NDCG@1 | Mean NDCG@5 | Mean NDCG@10 |
 |---|---|---|---|---|
@@ -137,6 +136,7 @@ uv run streamlit run leaderboard_reranker.py
 | tomaarsen/Qwen3-Reranker-8B-seq-cls | 7.6B | 0.8679 | 0.9546 | 0.8893 | 0.9907 | 0.8490 | 0.8409 | 0.8220 | 0.9880 | 0.9014 |
 | tomaarsen/Qwen3-Reranker-4B-seq-cls | 4.0B | 0.8733 | 0.9707 | 0.8685 | 0.9906 | 0.8533 | 0.8321 | 0.8105 | 0.9861 | 0.8752 |
 | jinaai/jina-reranker-v3.5 | 597M | 0.8539 | 0.9838 | 0.8094 | 0.9733 | 0.8565 | 0.8194 | — | 0.9887 | 0.8545 |
+| jinaai/jina-reranker-v3 | 597M | 0.8553 | 0.9773 | 0.7960 | 0.9695 | 0.8449 | 0.8104 | — | 0.9859 | 0.8546 |
 | zeroentropy/zerank-2-reranker | 4.0B | 0.8712 | 0.9436 | 0.8646 | 0.9846 | 0.8003 | 0.8027 | 0.7120 | 0.9791 | 0.8669 |
 | lightonai/LightOn-rerank-PW-4B | 4.5B | 0.8567 | 0.9321 | 0.8693 | 0.9882 | 0.8072 | 0.8091 | 0.7609 | 0.9803 | 0.7938 |
 | mixedbread-ai/mxbai-rerank-large-v2 | 1.5B | 0.8563 | 0.9531 | 0.8772 | 0.9778 | 0.7939 | 0.8771 | 0.6787 | 0.9681 | 0.8130 |
@@ -144,7 +144,6 @@ uv run streamlit run leaderboard_reranker.py
 | tomaarsen/Qwen3-Reranker-0.6B-seq-cls | 596M | 0.8336 | 0.9308 | 0.8489 | 0.9779 | 0.8507 | 0.7359 | 0.7813 | 0.9808 | 0.7867 |
 | nvidia/llama-nemotron-rerank-1b-v2 | 1.2B | 0.8536 | 0.9480 | 0.8491 | 0.9883 | 0.8182 | 0.8026 | 0.6719 | 0.9858 | 0.7527 |
 | nlpai-lab/LAMAR-600m | 568M | 0.8461 | 0.9591 | 0.8225 | 0.9835 | 0.8214 | 0.7975 | 0.5679 | 0.9850 | 0.7822 |
-| jinaai/jina-reranker-v3 | 597M | 0.8553 | 0.9773 | 0.7960 | 0.9695 | 0.8449 | 0.8104 | 0.4307 | 0.9859 | 0.8546 |
 | dragonkue/bge-reranker-v2-m3-ko | 568M | 0.8232 | 0.9684 | 0.8708 | 0.9769 | 0.7573 | 0.6776 | 0.7061 | 0.9846 | 0.6721 |
 | BAAI/bge-reranker-v2-gemma | 2.5B | 0.8614 | 0.9407 | 0.8698 | 0.9857 | 0.8362 | 0.8429 | 0.2881 | 0.9858 | 0.7572 |
 | upskyy/ko-reranker-8k | 568M | 0.8143 | 0.9230 | 0.8388 | 0.9291 | 0.7249 | 0.6998 | 0.5975 | 0.9718 | 0.7770 |

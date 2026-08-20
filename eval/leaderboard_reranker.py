@@ -46,7 +46,7 @@ def app():
 
     st.header("MLDR 제외 (8 subsets · listwise / long-doc OOD 공정 비교)")
     st.caption(
-        "장문(MultiLongDocRetrieval) 제외 — listwise 모델(jina-reranker-v3.5)의 token-length OOD 공정 비교. "
+        "장문(MultiLongDocRetrieval) 제외 — listwise 모델(jina-reranker-v3/v3.5)의 token-length OOD 공정 비교. "
         "MLDR 제외로 전 모델 mean 이 9-subset 대비 상승 → 표 간 절대값 비교 금지."
     )
     st.dataframe(_mean_df(data, tasks_8), use_container_width=True)
