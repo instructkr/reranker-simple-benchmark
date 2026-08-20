@@ -1,4 +1,4 @@
-"""모델 크기(파라미터 수) vs 성능(공식 kMTEB 9-subset mean NDCG@10) 산점도.
+"""모델 크기(파라미터 수) vs 성능(공식 MTEB(kor, v2) 9-subset mean NDCG@10) 산점도.
 
 - x축: 파라미터 수 (log scale, MODEL_SIZES 실측)
 - y축: 9개 공식 subset 평균 NDCG@10 (9개 전부 완료한 모델만 → listwise jina-reranker-v3/v3.5 는
@@ -90,7 +90,7 @@ def main():
     ax.set_ylim(min(ys) - 0.02, max(ys) + 0.02)
 
     ax.set_xlabel("Model size (parameters, log scale)", fontsize=11, color=INK)
-    ax.set_ylabel("Mean NDCG@10  (official kMTEB, 9 subsets)", fontsize=11, color=INK)
+    ax.set_ylabel("Mean NDCG@10  (official MTEB(kor, v2), 9 subsets)", fontsize=11, color=INK)
     ax.set_title("Reranker model size vs. accuracy  —  gold-injected reranking, max_length 8192\n"
                  "(jina-reranker-v3/v3.5 excluded: listwise long-doc token-length OOD)",
                  fontsize=11.5, color=INK, pad=12)
