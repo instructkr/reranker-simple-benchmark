@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.46318,
+  "ndcg_at_5": 0.67016,
+  "ndcg_at_10": 0.6998,
+  "map_at_10": 0.62061,
+  "mrr_at_10": 0.7907740451683444,
+  "recall_at_10": 0.92795,
+  "main_score": 0.6998,
+  "_model": "upskyy/ko-reranker-8k",
+  "_task": "MrTidyRetrieval",
+  "_split": "test",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

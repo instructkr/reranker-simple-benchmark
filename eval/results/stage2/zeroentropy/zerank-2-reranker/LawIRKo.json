@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.7387,
+  "ndcg_at_5": 0.8587,
+  "ndcg_at_10": 0.86687,
+  "map_at_10": 0.83047,
+  "mrr_at_10": 0.8315787480676619,
+  "recall_at_10": 0.97727,
+  "main_score": 0.86687,
+  "_model": "zeroentropy/zerank-2-reranker",
+  "_task": "LawIRKo",
+  "_split": "test",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

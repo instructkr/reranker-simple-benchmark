@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.405,
+  "ndcg_at_5": 0.53867,
+  "ndcg_at_10": 0.56794,
+  "map_at_10": 0.5115350000000001,
+  "mrr_at_10": 0.511563492063492,
+  "recall_at_10": 0.7475,
+  "main_score": 0.56794,
+  "_model": "nlpai-lab/LAMAR-600m",
+  "_task": "MultiLongDocRetrieval",
+  "_split": "dev+test",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

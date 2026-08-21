@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.77197,
+  "ndcg_at_5": 0.86022,
+  "ndcg_at_10": 0.87706,
+  "map_at_10": 0.83745,
+  "mrr_at_10": 0.8551813520340836,
+  "recall_at_10": 0.98021,
+  "main_score": 0.87706,
+  "_model": "mixedbread-ai/mxbai-rerank-large-v2",
+  "_task": "MrTidyRetrieval",
+  "_split": "test",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.81081,
+  "ndcg_at_5": 0.82922,
+  "ndcg_at_10": 0.84871,
+  "map_at_10": 0.80734,
+  "mrr_at_10": 0.8676600707850708,
+  "recall_at_10": 0.90836,
+  "main_score": 0.84871,
+  "_model": "BAAI/bge-reranker-v2-m3",
+  "_task": "Ko-StrategyQA",
+  "_split": "dev",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

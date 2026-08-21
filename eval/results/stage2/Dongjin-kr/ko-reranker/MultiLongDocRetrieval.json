@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.23249999999999998,
+  "ndcg_at_5": 0.33411,
+  "ndcg_at_10": 0.37209000000000003,
+  "map_at_10": 0.32084999999999997,
+  "mrr_at_10": 0.3225595238095238,
+  "recall_at_10": 0.5375000000000001,
+  "main_score": 0.37209000000000003,
+  "_model": "Dongjin-kr/ko-reranker",
+  "_task": "MultiLongDocRetrieval",
+  "_split": "dev+test",
+  "_max_length": 512,
+  "_neg_top_k": 50
+}

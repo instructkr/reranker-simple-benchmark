@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.83277,
+  "ndcg_at_5": 0.85653,
+  "ndcg_at_10": 0.87335,
+  "map_at_10": 0.83637,
+  "mrr_at_10": 0.8788388835263835,
+  "recall_at_10": 0.92981,
+  "main_score": 0.87335,
+  "_model": "tomaarsen/Qwen3-Reranker-4B-seq-cls",
+  "_task": "Ko-StrategyQA",
+  "_split": "dev",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

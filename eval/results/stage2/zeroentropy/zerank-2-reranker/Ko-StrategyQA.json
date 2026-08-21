@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.82939,
+  "ndcg_at_5": 0.85159,
+  "ndcg_at_10": 0.87122,
+  "map_at_10": 0.83272,
+  "mrr_at_10": 0.8791706885456886,
+  "recall_at_10": 0.93102,
+  "main_score": 0.87122,
+  "_model": "zeroentropy/zerank-2-reranker",
+  "_task": "Ko-StrategyQA",
+  "_split": "dev",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

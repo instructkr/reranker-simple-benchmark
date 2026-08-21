@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.66746,
+  "ndcg_at_5": 0.79332,
+  "ndcg_at_10": 0.8091,
+  "map_at_10": 0.75769,
+  "mrr_at_10": 0.7804471590694868,
+  "recall_at_10": 0.94735,
+  "main_score": 0.8091,
+  "_model": "lightonai/LightOn-rerank-PW-4B",
+  "_task": "MrTidyRetrieval",
+  "_split": "test",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

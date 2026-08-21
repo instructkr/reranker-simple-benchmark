@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.96571,
+  "ndcg_at_5": 0.98531,
+  "ndcg_at_10": 0.98577,
+  "map_at_10": 0.98105,
+  "mrr_at_10": 0.9822893127924303,
+  "recall_at_10": 0.99948,
+  "main_score": 0.98577,
+  "_model": "BAAI/bge-reranker-v2-gemma",
+  "_task": "SQuADKorV1Retrieval",
+  "_split": "test",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

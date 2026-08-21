@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.9574066666666666,
+  "ndcg_at_5": 0.97476,
+  "ndcg_at_10": 0.97594,
+  "map_at_10": 0.9705866666666667,
+  "mrr_at_10": 0.9716114050558495,
+  "recall_at_10": 0.99222,
+  "main_score": 0.97594,
+  "_model": "Dongjin-kr/ko-reranker",
+  "_task": "BelebeleRetrieval",
+  "_split": "test",
+  "_max_length": 512,
+  "_neg_top_k": 50
+}

@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.645,
+  "ndcg_at_5": 0.74621,
+  "ndcg_at_10": 0.76085,
+  "map_at_10": 0.7234700000000001,
+  "mrr_at_10": 0.7316785714285714,
+  "recall_at_10": 0.8775,
+  "main_score": 0.76085,
+  "_model": "lightonai/LightOn-rerank-PW-4B",
+  "_task": "MultiLongDocRetrieval",
+  "_split": "dev+test",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

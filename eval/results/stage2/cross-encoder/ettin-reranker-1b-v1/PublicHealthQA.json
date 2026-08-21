@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.61039,
+  "ndcg_at_5": 0.73807,
+  "ndcg_at_10": 0.74608,
+  "map_at_10": 0.70545,
+  "mrr_at_10": 0.7056277056277056,
+  "recall_at_10": 0.87013,
+  "main_score": 0.74608,
+  "_model": "cross-encoder/ettin-reranker-1b-v1",
+  "_task": "PublicHealthQA",
+  "_split": "test",
+  "_max_length": 7999,
+  "_neg_top_k": 50
+}

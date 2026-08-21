@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.79825,
+  "ndcg_at_5": 0.89282,
+  "ndcg_at_10": 0.90144,
+  "map_at_10": 0.87451,
+  "mrr_at_10": 0.9392543859649123,
+  "recall_at_10": 0.98246,
+  "main_score": 0.90144,
+  "_model": "Dongjin-kr/ko-reranker",
+  "_task": "AutoRAGRetrieval",
+  "_split": "test",
+  "_max_length": 512,
+  "_neg_top_k": 50
+}

@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.66667,
+  "ndcg_at_5": 0.75815,
+  "ndcg_at_10": 0.81295,
+  "map_at_10": 0.72454,
+  "mrr_at_10": 0.8817851553767047,
+  "recall_at_10": 0.95766,
+  "main_score": 0.81295,
+  "_model": "BAAI/bge-reranker-v2-m3",
+  "_task": "MIRACLRetrieval",
+  "_split": "dev",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

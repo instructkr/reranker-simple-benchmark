@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.94737,
+  "ndcg_at_5": 0.97943,
+  "ndcg_at_10": 0.97943,
+  "map_at_10": null,
+  "mrr_at_10": null,
+  "recall_at_10": null,
+  "main_score": 0.97943,
+  "_model": "telepix/PIXIE-Spell-Reranker-Preview-0.6B",
+  "_task": "AutoRAGRetrieval",
+  "_split": "test",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

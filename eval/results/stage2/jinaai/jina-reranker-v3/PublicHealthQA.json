@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.63636,
+  "ndcg_at_5": 0.75869,
+  "ndcg_at_10": 0.79602,
+  "map_at_10": 0.74069,
+  "mrr_at_10": 0.7406874871160585,
+  "recall_at_10": 0.97403,
+  "main_score": 0.79602,
+  "_model": "jinaai/jina-reranker-v3",
+  "_task": "PublicHealthQA",
+  "_split": "test",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

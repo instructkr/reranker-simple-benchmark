@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.88596,
+  "ndcg_at_5": 0.95462,
+  "ndcg_at_10": 0.95462,
+  "map_at_10": null,
+  "mrr_at_10": null,
+  "recall_at_10": null,
+  "main_score": 0.95462,
+  "_model": "tomaarsen/Qwen3-Reranker-8B-seq-cls",
+  "_task": "AutoRAGRetrieval",
+  "_split": "test",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

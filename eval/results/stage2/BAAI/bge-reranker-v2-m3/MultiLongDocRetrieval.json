@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.5425,
+  "ndcg_at_5": 0.645695,
+  "ndcg_at_10": 0.6689750000000001,
+  "map_at_10": 0.624755,
+  "mrr_at_10": 0.6270267857142857,
+  "recall_at_10": 0.81,
+  "main_score": 0.6689750000000001,
+  "_model": "BAAI/bge-reranker-v2-m3",
+  "_task": "MultiLongDocRetrieval",
+  "_split": "dev+test",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

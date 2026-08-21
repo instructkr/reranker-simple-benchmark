@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.33062,
+  "ndcg_at_5": 0.49621,
+  "ndcg_at_10": 0.53058,
+  "map_at_10": 0.46305,
+  "mrr_at_10": 0.47293690888274104,
+  "recall_at_10": 0.74404,
+  "main_score": 0.53058,
+  "_model": "cross-encoder/ettin-reranker-1b-v1",
+  "_task": "LawIRKo",
+  "_split": "test",
+  "_max_length": 7999,
+  "_neg_top_k": 50
+}

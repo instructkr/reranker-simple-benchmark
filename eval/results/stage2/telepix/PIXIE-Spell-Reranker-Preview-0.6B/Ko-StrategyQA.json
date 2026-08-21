@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.78041,
+  "ndcg_at_5": 0.80984,
+  "ndcg_at_10": 0.83287,
+  "map_at_10": null,
+  "mrr_at_10": null,
+  "recall_at_10": null,
+  "main_score": 0.83287,
+  "_model": "telepix/PIXIE-Spell-Reranker-Preview-0.6B",
+  "_task": "Ko-StrategyQA",
+  "_split": "dev",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

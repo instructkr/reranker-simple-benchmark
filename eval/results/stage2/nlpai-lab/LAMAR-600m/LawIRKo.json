@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.64075,
+  "ndcg_at_5": 0.76425,
+  "ndcg_at_10": 0.78223,
+  "map_at_10": 0.73766,
+  "mrr_at_10": 0.7386351790224931,
+  "recall_at_10": 0.92085,
+  "main_score": 0.78223,
+  "_model": "nlpai-lab/LAMAR-600m",
+  "_task": "LawIRKo",
+  "_split": "test",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.80466,
+  "ndcg_at_5": 0.89544,
+  "ndcg_at_10": 0.90141,
+  "map_at_10": 0.87495,
+  "mrr_at_10": 0.8759740765985503,
+  "recall_at_10": 0.98091,
+  "main_score": 0.90141,
+  "_model": "tomaarsen/Qwen3-Reranker-8B-seq-cls",
+  "_task": "LawIRKo",
+  "_split": "test",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

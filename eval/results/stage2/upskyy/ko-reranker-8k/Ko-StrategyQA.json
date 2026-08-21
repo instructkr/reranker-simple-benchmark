@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.76351,
+  "ndcg_at_5": 0.79854,
+  "ndcg_at_10": 0.81428,
+  "map_at_10": null,
+  "mrr_at_10": null,
+  "recall_at_10": null,
+  "main_score": 0.81428,
+  "_model": "upskyy/ko-reranker-8k",
+  "_task": "Ko-StrategyQA",
+  "_split": "dev",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}

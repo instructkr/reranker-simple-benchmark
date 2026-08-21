@@ -36,10 +36,16 @@ from datasets import load_dataset
 from tqdm import tqdm
 
 import mteb
-from mteb.evaluation.evaluators.RetrievalEvaluator import DRESModel
-from mteb.model_meta import ModelMeta
-from mteb.models.wrapper import Wrapper
-from mteb.requires_package import requires_package
+# Method 1(mteb 프레임워크 기반 BM25)은 mteb 1.38 API 를 사용한다. mteb 2.x 에는 아래 심볼이 없으므로
+# guard 하여 모듈 import 가 되게 한다(Method 1 은 그 env 에서 비활성; Method 2 / mteb-2.x qrels 마이닝은 정상).
+try:
+    from mteb.evaluation.evaluators.RetrievalEvaluator import DRESModel
+    from mteb.model_meta import ModelMeta
+    from mteb.models.wrapper import Wrapper
+    from mteb.requires_package import requires_package
+    _MTEB_V1_API = True
+except Exception:
+    _MTEB_V1_API = False
 
 # Korean tokenizers
 from konlpy.tag import Kkma, Okt
@@ -50,7 +56,23 @@ try:
     MECAB_AVAILABLE = True
 except Exception:
     MECAB_AVAILABLE = False
-    print("Warning: MeCab is not available")
+    print("Warning: konlpy MeCab is not available")
+
+try:
+    import mecab as _pymecab  # python-mecab-ko (mecab-ko-dic 번들 = konlpy Mecab 과 동일 사전)
+    PYMECAB_AVAILABLE = True
+except Exception:
+    PYMECAB_AVAILABLE = False
+
+
+class _PyMecabWrapper:
+    """python-mecab-ko 를 konlpy Mecab 과 동일한 .morphs 인터페이스로 감싼다."""
+
+    def __init__(self):
+        self._m = _pymecab.MeCab()
+
+    def morphs(self, text: str):
+        return self._m.morphs(text)
 
 # Configure logging
 logging.basicConfig(
@@ -104,10 +126,16 @@ class KoreanTokenizer(Tokenizer):
     def _init_tokenizer(self, tokenizer_name: str):
         """Initialize the specified Korean tokenizer"""
         if tokenizer_name == "Mecab":
-            if not MECAB_AVAILABLE:
-                raise ImportError("MeCab is not available")
-            mecab_dict_path = "ko-reranker-benchmark/mecab/lib/mecab/dic/mecab-ko-dic"
-            return Mecab(dicpath=mecab_dict_path)
+            # konlpy Mecab(시스템 mecab-ko-dic) 우선, 실패 시 python-mecab-ko(mecab-ko-dic 번들)로 대체.
+            # 두 경로 모두 mecab-ko-dic 를 사용하므로 토큰화가 동일하다(기존 pool 과 일관).
+            if MECAB_AVAILABLE:
+                try:
+                    return Mecab()
+                except Exception as e:
+                    logger.warning(f"konlpy Mecab init 실패({e}) → python-mecab-ko 로 대체")
+            if PYMECAB_AVAILABLE:
+                return _PyMecabWrapper()
+            raise ImportError("MeCab 사용 불가: konlpy Mecab / python-mecab-ko 모두 없음")
         elif tokenizer_name == "Kiwi":
             return Kiwi_()
         elif tokenizer_name == "Okt":
@@ -473,88 +501,115 @@ def retrieve_custom_dataset(
     logger.info(f"{'='*80}")
     logger.info(f"Processing custom dataset: {dataset_name}")
     logger.info(f"{'='*80}")
-
-    # Load dataset
     queries, corpus, qrels = load_custom_dataset(dataset_name)
+    _bm25_retrieve_and_save(dataset_name, queries, corpus, qrels, tokenizer_name, output_folder, top_k)
 
-    # Initialize tokenizer
+
+def _bm25_retrieve_and_save(dataset_name, queries, corpus, qrels, tokenizer_name, output_folder, top_k):
+    """공용 BM25 검색 코어: (queries, corpus, qrels) → 정답 prepend + BM25 top-k → <dataset>_id.jsonl.
+    custom 데이터셋(load_custom_dataset)과 mteb 2.x task(load_mteb_kor_task) 양쪽에서 재사용한다."""
     tokenizer = KoreanTokenizer(tokenizer_name, stopwords=None)
 
-    # Encode corpus
     logger.info("Encoding corpus...")
     corpus_ids = list(corpus.keys())
     corpus_texts = [corpus[cid] for cid in corpus_ids]
     encoded_corpus = tokenizer.tokenize(corpus_texts, return_ids=True)
     logger.info(f"Encoded {len(encoded_corpus.ids):,} documents, {len(encoded_corpus.vocab):,} vocab")
 
-    # Build BM25 index
-    logger.info("Building BM25 index...")
     retriever = bm25s.BM25()
     retriever.index(encoded_corpus)
 
-    # Encode queries
-    logger.info("Encoding queries...")
     query_ids = list(queries.keys())
     query_texts = [queries[qid] for qid in query_ids]
     query_tokens = tokenizer.tokenize(query_texts, return_ids=False)
 
-    # Adjust top_k if corpus is smaller
     actual_top_k = min(top_k, len(corpus))
-    if actual_top_k < top_k:
-        logger.warning(
-            f"Corpus size ({len(corpus):,}) is smaller than top_k ({top_k}). "
-            f"Using top_k={actual_top_k}"
-        )
+    logger.info(f"Retrieving top {actual_top_k} for {len(queries):,} queries...")
+    bm25_results, _ = retriever.retrieve(query_tokens, corpus=corpus_ids, k=actual_top_k)
 
-    # Perform retrieval
-    logger.info(f"Retrieving top {actual_top_k} results for {len(queries):,} queries...")
     results = {}
-
-    bm25_results, bm25_scores = retriever.retrieve(
-        query_tokens,
-        corpus=corpus_ids,
-        k=actual_top_k
-    )
-
-    # Process results: place ground truth docs first
     for qi, qid in enumerate(tqdm(query_ids, desc="Processing queries")):
-        # Get ground truth document IDs
-        relevant_docs = qrels.get(qid, [])
-
-        # Get BM25 results
-        bm25_docs = [doc_id for doc_id in bm25_results[qi]]
-
-        # Place ground truth documents first
-        final_docs = list(relevant_docs)
-
-        # Add BM25 results (excluding ground truth docs already added)
-        for doc_id in bm25_docs:
-            if doc_id not in relevant_docs:
+        relevant_docs = list(qrels.get(qid, []))
+        rel_set = set(relevant_docs)
+        final_docs = list(relevant_docs)  # 정답을 앞에 배치(gold prepend)
+        for doc_id in bm25_results[qi]:
+            if doc_id not in rel_set:
                 final_docs.append(doc_id)
                 if len(final_docs) >= actual_top_k:
                     break
+        results[qid] = final_docs[:actual_top_k]
 
-        # Ensure we have exactly top_k documents
-        final_docs = final_docs[:actual_top_k]
-        results[qid] = final_docs
-
-    logger.info(f"Retrieved results for {len(results):,} queries")
-
-    # Save results
     output_path = Path(output_folder) / f"{dataset_name}_id.jsonl"
     output_path.parent.mkdir(parents=True, exist_ok=True)
-
-    logger.info(f"Saving results to {output_path}...")
-    with open(output_path, 'w', encoding='utf-8') as f:
+    with open(output_path, "w", encoding="utf-8") as f:
         for query_id, doc_ids in results.items():
-            line = json.dumps({
-                "query_id": query_id,
-                "relevance_ids": doc_ids
-            }, ensure_ascii=False)
-            f.write(line + '\n')
-
-    logger.info(f"Completed: {dataset_name}")
+            f.write(json.dumps({"query_id": query_id, "relevance_ids": doc_ids}, ensure_ascii=False) + "\n")
+    logger.info(f"Completed: {dataset_name} → {output_path} ({len(results)} queries)")
     logger.info("")
+
+
+def _doc_text_from(v) -> str:
+    if isinstance(v, dict):
+        title = v.get("title") or ""
+        text = v.get("text") or ""
+        return (title + "\n" + text).strip() if title else text
+    return v if isinstance(v, str) else str(v)
+
+
+def load_mteb_kor_task(task_name: str):
+    """mteb 2.x 로 한국어 retrieval task 를 로드해 (queries, corpus, qrels[list]) 딕셔너리로 반환.
+    task 의 모든 (kor subset, split) 을 병합한다(예: MultiLongDocRetrieval = dev+test).
+    공식 MTEB(kor, v2) split 기준을 따른다(각 task 표준 eval_splits)."""
+    task = None
+    for kw in (dict(tasks=[task_name], languages=["kor-Hang"]), dict(tasks=[task_name])):
+        try:
+            ts = mteb.get_tasks(**kw)
+            if ts:
+                task = ts[0]
+                break
+        except Exception:
+            pass
+    if task is None:
+        raise ValueError(f"mteb task 없음: {task_name}")
+    task.load_data()
+    task.convert_v1_dataset_format_to_v2(num_proc=1)
+    ds = task.dataset
+    queries, corpus, qrels = {}, {}, {}
+    for sub in ds:
+        for sp in ds[sub]:
+            blk = ds[sub][sp]
+            c, q, r = blk["corpus"], blk["queries"], blk["relevant_docs"]
+            if hasattr(c, "keys"):
+                for k, v in c.items():
+                    corpus[str(k)] = _doc_text_from(v)
+            else:
+                for row in c:
+                    corpus[str(row["id"])] = _doc_text_from(row)
+            if hasattr(q, "keys"):
+                for k, v in q.items():
+                    queries[str(k)] = v if isinstance(v, str) else v.get("text", "")
+            else:
+                for row in q:
+                    queries[str(row["id"])] = row.get("text", "")
+            for qid, docs in r.items():
+                qrels[str(qid)] = [str(d) for d in docs]
+            logger.info(f"  [{sub}/{sp}] q={len(q)} corpus={len(c)}")
+    return queries, corpus, qrels
+
+
+def retrieve_kor_task(
+    task_name: str,
+    tokenizer_name: str = "Mecab",
+    output_folder: str = "eval/results/stage1/top_1k_qrels",
+    top_k: int = 1000,
+):
+    """mteb 2.x 기반: 공식 kor 벤치 task 하나를 BM25 마이닝해 <task>_id.jsonl 생성.
+    MultiLongDocRetrieval(dev+test), LawIRKo 등 신규/누락 pool 생성에 사용."""
+    logger.info(f"{'='*80}")
+    logger.info(f"Processing mteb(kor) task: {task_name}")
+    logger.info(f"{'='*80}")
+    queries, corpus, qrels = load_mteb_kor_task(task_name)
+    _bm25_retrieve_and_save(task_name, queries, corpus, qrels, tokenizer_name, output_folder, top_k)
 
 
 # ============================================================================
@@ -617,7 +672,37 @@ Examples:
         )
     )
 
+    parser.add_argument(
+        "--kor_tasks",
+        nargs="+",
+        default=None,
+        help=(
+            "mteb 2.x 기반으로 지정한 한국어 retrieval task 를 BM25 마이닝해 top_1k_qrels/<task>_id.jsonl 생성. "
+            "공식 MTEB(kor, v2) split 기준(각 task 표준 eval_splits, 예: MultiLongDocRetrieval=dev+test). "
+            "예: --kor_tasks MultiLongDocRetrieval LawIRKo"
+        ),
+    )
+
     args = parser.parse_args()
+
+    # mteb 2.x 기반 kor task 마이닝(신규/누락 pool): --kor_tasks 지정 시 이 경로만 실행
+    if args.kor_tasks:
+        output_folder = args.output_dir or "eval/results/stage1/top_1k_qrels"
+        logger.info(f"[kor_tasks] mteb 2.x BM25 마이닝: {args.kor_tasks} (tokenizer={args.tokenizer}) → {output_folder}")
+        for task_name in args.kor_tasks:
+            try:
+                retrieve_kor_task(
+                    task_name=task_name,
+                    tokenizer_name=args.tokenizer,
+                    output_folder=output_folder,
+                    top_k=args.top_k,
+                )
+            except Exception as e:
+                logger.error(f"Failed to mine {task_name}: {e}")
+                import traceback
+                traceback.print_exc()
+        logger.info("All kor_tasks processed.")
+        return
 
     # Determine which datasets to process
     if "all" in args.datasets:

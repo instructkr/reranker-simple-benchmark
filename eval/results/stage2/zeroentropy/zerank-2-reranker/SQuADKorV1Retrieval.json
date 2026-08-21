@@ -1,0 +1,14 @@
+{
+  "ndcg_at_1": 0.95047,
+  "ndcg_at_5": 0.97852,
+  "ndcg_at_10": 0.9791,
+  "map_at_10": 0.97217,
+  "mrr_at_10": 0.9725994606363502,
+  "recall_at_10": 0.99931,
+  "main_score": 0.9791,
+  "_model": "zeroentropy/zerank-2-reranker",
+  "_task": "SQuADKorV1Retrieval",
+  "_split": "test",
+  "_max_length": 8192,
+  "_neg_top_k": 50
+}
