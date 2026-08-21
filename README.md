@@ -79,6 +79,10 @@ uv run streamlit run leaderboard_reranker.py
 - **최대 시퀀스 길이 (max_length)**: **모든 모델을 `max_length=8192` 로 측정**합니다. 단, **아키텍처상 8192 를 지원하지 않는 모델은 네이티브 최대 길이로 측정**합니다 — **`Dongjin-kr/ko-reranker` = 512** (XLM-RoBERTa 계열, max position 514), `cross-encoder/ettin-reranker-1b-v1` = 7999. 각 결과 파일(`eval/results/stage2_mteb2x/<model>/<task>.json`)에 실제 적용된 `_max_length` 가 기록됩니다.
 - **후보 깊이**: gold 외 BM25 top-50 negative (`_neg_top_k=50`).
 
+**모델 크기 vs. 성능 (9-subset)** — x축 파라미터 수(log), y축 9-subset mean NDCG@10. jina-reranker-v3/v3.5 는 제외.
+
+![Reranker model size vs. NDCG@10 (official kMTEB 9 subsets)](assets/model_size_vs_ndcg9.png)
+
 #### Results — Official kMTEB (9 subsets)
 **공식 9개 subset 을 모두 평가한 모델**의 mean NDCG@1/5/10 (NDCG@10 내림차순). listwise 모델처럼 장문(MLDR)을 완료하지 못한 모델은 아래 **8-subset 표**에서 공정 비교합니다.
 
@@ -101,10 +105,6 @@ uv run streamlit run leaderboard_reranker.py
 | cross-encoder/ettin-reranker-1b-v1 | 1.0B | 0.5686 | 0.6605 | 0.6901 |
 
 > `jinaai/jina-reranker-v3` 와 `jinaai/jina-reranker-v3.5` 는 **listwise** reranker 로, 장문(`MultiLongDocRetrieval`)에서 다른 모델과 **동일 조건(8192)으로 공정 비교가 불가능**하여 두 모델 모두 MLDR 을 N/A 로 두고 위 9-subset 평가에서 제외합니다. 실제 후보셋(정답 ∪ BM25 top-50 ≈ 51개, 문서 토큰 길이 mean ≈ 8000)을 8192 로 재랭킹하면 51개가 단일 컨텍스트에 들어가지 않아 블록으로 분할되는데, **블록을 키우면 OOM**(80GB GPU 에서도 첫 블록 ≈ 126k 토큰), **블록을 줄이면**(예: 블록당 2문서) jina 의 listwise 상호작용이 사실상 사라져 pointwise 에 가까워지고 점수가 임의의 블록 크기(다른 모델엔 없는 노브)에 의존하게 됩니다. 즉 장문 task 는 listwise reranker 의 **token-length OOD** 로 공정 측정이 원천적으로 어렵습니다. 아래 8-subset 표에서 비교하세요.
-
-**모델 크기 vs. 성능 (9-subset)** — x축 파라미터 수(log), y축 9-subset mean NDCG@10. jina-reranker-v3/v3.5 는 제외.
-
-![Reranker model size vs. NDCG@10 (official kMTEB 9 subsets)](assets/model_size_vs_ndcg9.png)
 
 #### Results — MLDR 제외 (8 subsets · listwise / long-doc OOD 공정 비교)
 장문(`MultiLongDocRetrieval`)을 제외한 **8개 공통 subset** 기준 mean NDCG@1/5/10 (NDCG@10 내림차순). listwise 모델(`jina-reranker-v3`, `jina-reranker-v3.5`)을 포함해 **모든 모델을 동일 기준으로 비교**합니다. (MLDR 이 가장 어려운 task 라 전 모델의 mean 이 9-subset 대비 상승합니다 — 표 간 절대값 비교 금지.)
