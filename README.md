@@ -163,7 +163,7 @@ uv run streamlit run leaderboard_reranker.py
 ```bibtex
 @misc{reranker-simple-benchmark,
   title        = {Make Reranker Benchmark Simple Again},
-  author       = {Youngjoon Jang and ...},
+  author       = {Sigrid Jin, Youngjoon Jang, Yongbin Choi, Daegon Yu, Kanghyeun Lee, Juna Jung, Junu Moon},
   year         = {2025},
   publisher    = {GitHub},
   journal      = {GitHub repository},
