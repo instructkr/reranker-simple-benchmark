@@ -156,8 +156,17 @@ uv run streamlit run leaderboard_reranker.py
 > - **제외 모델 (3)**: `sigridjineth/ko-reranker-v1.1`, `Alibaba-NLP/gte-multilingual-reranker-base`, `jinaai/jina-reranker-v2-base-multilingual` 은 통합 env(transformers 5.x)에서 아키텍처 비호환(RoPE device-side assert 등)으로 실행 불가하여 제외했습니다.
 > - **일부 재사용**: 정답이 항상 BM25 top-50 안에 있어 gold-injection 이 무의미한 단일 subset·단일 split no-op task(AutoRAG/Ko-StrategyQA/SQuAD)의 경우, 4개 모델(PIXIE·Qwen-8B·upskyy·mxbai)은 MrTidy Δ<0.01 로 검증한 뒤 mteb 1.38 원본 점수를 재사용했고, 나머지 모델은 8192 로 재실행했습니다.
 
-<!-- ## Contributions
+## Citation
 
-This project welcomes contributions and suggestions. See [issues](https://github.com/instructkr/retriever-simple-benchmark/issues) if you consider doing any.
+본 벤치마크를 연구에 활용하셨다면 아래와 같이 인용해 주세요.
 
-When you submit a pull request, please make sure that you should run formatter by `make format && make check`, please. -->
+```bibtex
+@misc{reranker-simple-benchmark,
+  title        = {Make Reranker Benchmark Simple Again},
+  author       = {Youngjoon Jang and ...},
+  year         = {2025},
+  publisher    = {GitHub},
+  journal      = {GitHub repository},
+  howpublished = {\url{https://github.com/instructkr/reranker-simple-benchmark}}
+}
+```
