@@ -3,7 +3,7 @@
 표1: 공식 kMTEB 9-subset mean NDCG@1/5/10 (NDCG@10 내림차순).
 표2: MLDR 제외 8-subset mean NDCG@1/5/10 (listwise/long-doc OOD 공정 비교).
 표3: 모델별 subset(dataset)별 NDCG@10.
-각 표에 Params(모델 크기, 실측) 열 포함.
+각 표에 Params(모델 크기, 실측) 열 포함. 표1·2 에는 Mean PPS(추론 처리량, `--speed` 결과) 열 포함.
 
 사용:
   uv run python eval/build_readme_mteb2x.py            # markdown 을 stdout 출력
@@ -32,7 +32,7 @@ TASKS = [
 
 
 def collect():
-    """{model: {task: {ndcg_at_1, ndcg_at_5, ndcg_at_10}}}"""
+    """{model: {task: {ndcg_at_1, ndcg_at_5, ndcg_at_10, pps}}}"""
     data = {}
     for f in glob.glob(str(STAGE2 / "**" / "*.json"), recursive=True):
         base = os.path.basename(f)[:-5]
@@ -41,12 +41,16 @@ def collect():
         model = os.path.relpath(f, STAGE2).rsplit("/" + base + ".json", 1)[0]
         d = json.load(open(f))
         data.setdefault(model, {})[base] = {
-            k: d.get(k) for k in ("ndcg_at_1", "ndcg_at_5", "ndcg_at_10")
+            k: d.get(k) for k in ("ndcg_at_1", "ndcg_at_5", "ndcg_at_10", "pps")
         }
     return data
 
 
 MLDR = "MultiLongDocRetrieval"  # 장문 task — listwise 모델은 token-length OOD 로 8192 tractable 초과
+# Mean PPS 는 MLDR 제외 8 subset 평균 — 장문에선 모델별 입력 상한(512~8192)이 처리량을 지배하므로.
+PPS_TASKS = [t for t in TASKS if t != MLDR]
+PPS_NOTE = ("**Mean PPS** = 추론 처리량(query–document pairs/s), MLDR 제외 8 subset 평균. RTX A6000 1장, "
+            "bf16 + flash_attention_2, `--speed` 로 측정 (측정 방식은 *Methodology* 참고).")
 
 # 모델 파라미터 수(실측: 캐시된 safetensors 헤더의 tensor shape 합). 표 Params 열·산점도 x축에 사용.
 MODEL_SIZES = {
@@ -67,6 +71,8 @@ MODEL_SIZES = {
     "Dongjin-kr/ko-reranker": 559_891_457,
     "telepix/PIXIE-Spell-Reranker-Preview-0.6B": 595_777_536,
     "cross-encoder/ettin-reranker-1b-v1": 1_028_050_688,
+    "nlpai-lab/KURE-Reranker-nano": 149_323_009,
+    "nlpai-lab/KURE-Reranker-base": 1_720_574_976,
 }
 
 
@@ -91,6 +97,12 @@ def _mean_over(data, model, tasks):
     return v1 / n, v5 / n, v10 / n
 
 
+def mean_pps(data, model):
+    """PPS_TASKS 전부에 PPS 가 있으면 평균, 하나라도 결측이면 None."""
+    vals = [(data[model].get(t) or {}).get("pps") for t in PPS_TASKS]
+    return None if any(v is None for v in vals) else sum(vals) / len(vals)
+
+
 def _mean_table(data, tasks, title, note=None):
     rows = []
     for model in data:
@@ -101,11 +113,14 @@ def _mean_table(data, tasks, title, note=None):
     out = [f"#### {title}", ""]
     if note:
         out += [note, ""]
-    out.append("| Model | Params | Mean NDCG@1 | Mean NDCG@5 | Mean NDCG@10 |")
-    out.append("|---|---|---|---|---|")
+    out.append("| Model | Params | Mean NDCG@1 | Mean NDCG@5 | Mean NDCG@10 | Mean PPS |")
+    out.append("|---|---|---|---|---|---|")
     for model, n1, n5, n10 in rows:
-        out.append(f"| {model} | {size_label(model)} | {n1:.4f} | {n5:.4f} | {n10:.4f} |")
+        pps = mean_pps(data, model)
+        out.append(f"| {model} | {size_label(model)} | {n1:.4f} | {n5:.4f} | {n10:.4f} | "
+                   f"{f'{pps:.1f}' if pps is not None else '—'} |")
     out.append("")
+    out += [PPS_NOTE, ""]
     return out
 
 

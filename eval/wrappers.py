@@ -312,3 +312,41 @@ class NemotronRerankerWrapper(BaseRerankerWrapper):
                 logits = self.model(**batch).logits.view(-1).float().cpu()
                 out.extend(logits.tolist())
         return out
+
+# ============================================================================
+# sentence-transformers CrossEncoder builds (logits_to_keep=1: only the last position's logits)
+# ============================================================================
+BGE_GEMMA_PROMPT = ("Given a query A and a passage B, determine whether the passage contains an answer "
+                    "to the query by providing a prediction of either 'Yes' or 'No'.")
+# FlagLLMReranker 입력 — bos, "A: {query}", "\n", "B: {passage}", "\n", prompt — 을 chat template 으로.
+BGE_GEMMA_TEMPLATE = (
+    '{%- set query = messages | selectattr("role", "eq", "query") | map(attribute="content") | first -%}\n'
+    '{%- set document = messages | selectattr("role", "eq", "document") | map(attribute="content") | first -%}\n'
+    "{{ bos_token }}A: {{ query }}\nB: {{ document }}\n" + BGE_GEMMA_PROMPT
+)
+
+
+def build_bge_gemma_cross_encoder(model_name: str, device: str, max_length: int = 8192):
+    """BAAI/bge-reranker-v2-gemma 는 ST 설정(modules.json/LogitScore)을 배포하지 않아 plain CrossEncoder
+    로 로드하면 무작위 seq-cls head 가 붙는다. FlagLLMReranker 와 같은 입력·점수(마지막 위치 'Yes' 로짓)를
+    ST causal reranker 로 구성한다 — ST 가 left padding + logits_to_keep=1 로 마지막 위치만 투영하므로
+    [batch, seq, 256k vocab] 로짓을 만들지 않는다 (FlagLLMReranker 대비 점수 Pearson 0.9997, top-1 동일)."""
+    import torch
+    from sentence_transformers import CrossEncoder
+    from sentence_transformers.base.modules import Transformer
+    from sentence_transformers.cross_encoder.modules.logit_score import LogitScore
+
+    modality = {
+        "text": {"method": "forward", "method_output_name": "logits"},
+        "message": {"method": "forward", "method_output_name": "logits", "format": "flat"},
+    }
+    t = Transformer(model_name, transformer_task="text-generation", model_kwargs={"dtype": torch.bfloat16},
+                    modality_config=modality, module_output_name="causal_logits")
+    tok = t.tokenizer
+    tok.chat_template, tok.padding_side = BGE_GEMMA_TEMPLATE, "left"
+    ids = lambda s: tok(s, add_special_tokens=False)["input_ids"]  # noqa: E731
+    # FlagLLMReranker 는 bos..passage 를 max_length + sep + prompt 에 맞춰 passage 만 자른 뒤 sep + prompt 를
+    # 덧붙인다 → 최장 입력 = max_length + 2 * (sep + prompt).
+    t.max_seq_length = max_length + 2 * (len(ids("\n")) + len(ids(BGE_GEMMA_PROMPT)))
+    return CrossEncoder(modules=[t, LogitScore(true_token_id=ids("Yes")[0])],
+                        activation_fn=torch.nn.Identity(), device=device)

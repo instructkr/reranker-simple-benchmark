@@ -10,5 +10,23 @@
   "_task": "LawIRKo",
   "_split": "test",
   "_max_length": 7999,
-  "_neg_top_k": 50
+  "_neg_top_k": 50,
+  "pps": 33.40009824600617,
+  "pps_batch_size": 16,
+  "pps_sweep": {
+    "8": 32.93719734352145,
+    "16": 33.40009824600617,
+    "32": 32.884167794829814,
+    "64": 31.779500334072804,
+    "128": 29.02319303099709,
+    "256": 26.38127726087876,
+    "512": null
+  },
+  "_pps_n_pairs": 550,
+  "_pps_n_queries": 11,
+  "_pps_passes": 3,
+  "_pps_dtype": "bfloat16",
+  "_pps_attn": "flash_attention_2",
+  "_pps_gpu": "NVIDIA RTX A6000",
+  "_pps_gpu_shared": false
 }

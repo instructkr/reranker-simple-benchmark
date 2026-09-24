@@ -10,5 +10,21 @@
   "_task": "MIRACLRetrieval",
   "_split": "dev",
   "_max_length": 8192,
-  "_neg_top_k": 50
+  "_neg_top_k": 50,
+  "pps": 24.92101858754588,
+  "pps_batch_size": 16,
+  "pps_sweep": {
+    "8": 24.810217968938332,
+    "16": 24.92101858754588,
+    "32": 23.84219052389101,
+    "64": 21.102095735566724,
+    "128": null
+  },
+  "_pps_n_pairs": 568,
+  "_pps_n_queries": 10,
+  "_pps_passes": 3,
+  "_pps_dtype": "bfloat16",
+  "_pps_attn": "flash_attention_2",
+  "_pps_gpu": "NVIDIA RTX A6000",
+  "_pps_gpu_shared": false
 }

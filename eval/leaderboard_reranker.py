@@ -15,7 +15,7 @@ import pandas as pd
 import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from build_readme_mteb2x import collect, _mean_over, size_label, TASKS, MLDR  # noqa: E402
+from build_readme_mteb2x import collect, _mean_over, mean_pps, size_label, TASKS, MLDR, PPS_NOTE  # noqa: E402
 
 st.set_page_config(layout="wide")
 
@@ -25,8 +25,10 @@ def _mean_df(data, tasks):
     for model in data:
         r = _mean_over(data, model, tasks)  # tasks 전부 있어야 값(하나라도 결측이면 제외)
         if r:
-            rows.append([model, size_label(model), round(r[0], 4), round(r[1], 4), round(r[2], 4)])
-    df = pd.DataFrame(rows, columns=["Model", "Params", "Mean NDCG@1", "Mean NDCG@5", "Mean NDCG@10"])
+            pps = mean_pps(data, model)
+            rows.append([model, size_label(model), round(r[0], 4), round(r[1], 4), round(r[2], 4),
+                         round(pps, 1) if pps is not None else None])
+    df = pd.DataFrame(rows, columns=["Model", "Params", "Mean NDCG@1", "Mean NDCG@5", "Mean NDCG@10", "Mean PPS"])
     return df.sort_values("Mean NDCG@10", ascending=False).reset_index(drop=True)
 
 
@@ -37,7 +39,8 @@ def app():
     st.title("Korean Reranker Leaderboard — gold-injected, official kMTEB (mteb 2.x)")
     st.caption(
         "정답(gold) 문서를 재랭킹 후보에 항상 포함(BM25 top-50 ∪ gold). max_length 8192 "
-        "(ko-reranker 512, ettin 7999). 집계 = mteb 공식 get_score(subset·split 평균, MLDR=dev+test)."
+        "(ko-reranker 512, ettin 7999). 집계 = mteb 공식 get_score(subset·split 평균, MLDR=dev+test). "
+        + PPS_NOTE.replace("*", "")
     )
 
     st.header("Official kMTEB (9 subsets)")

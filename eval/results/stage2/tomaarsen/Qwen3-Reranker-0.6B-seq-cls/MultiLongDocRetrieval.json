@@ -10,5 +10,20 @@
   "_task": "MultiLongDocRetrieval",
   "_split": "dev+test",
   "_max_length": 8192,
-  "_neg_top_k": 50
+  "_neg_top_k": 50,
+  "pps": 4.150670560419622,
+  "pps_batch_size": 8,
+  "pps_sweep": {
+    "8": 4.150670560419622,
+    "16": 4.121936750907957,
+    "32": 4.102557969778843,
+    "64": null
+  },
+  "_pps_n_pairs": 550,
+  "_pps_n_queries": 11,
+  "_pps_passes": 3,
+  "_pps_dtype": "bfloat16",
+  "_pps_attn": "flash_attention_2",
+  "_pps_gpu": "NVIDIA RTX A6000",
+  "_pps_gpu_shared": false
 }

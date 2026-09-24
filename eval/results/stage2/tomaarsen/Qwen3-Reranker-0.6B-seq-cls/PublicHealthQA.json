@@ -10,5 +10,23 @@
   "_task": "PublicHealthQA",
   "_split": "test",
   "_max_length": 8192,
-  "_neg_top_k": 50
+  "_neg_top_k": 50,
+  "pps": 117.98223845078293,
+  "pps_batch_size": 32,
+  "pps_sweep": {
+    "8": 99.10627494081012,
+    "16": 113.84231356866374,
+    "32": 117.98223845078293,
+    "64": 113.50283120468676,
+    "128": 104.66426626064866,
+    "256": 89.13719199300287,
+    "512": null
+  },
+  "_pps_n_pairs": 553,
+  "_pps_n_queries": 11,
+  "_pps_passes": 3,
+  "_pps_dtype": "bfloat16",
+  "_pps_attn": "flash_attention_2",
+  "_pps_gpu": "NVIDIA RTX A6000",
+  "_pps_gpu_shared": false
 }
