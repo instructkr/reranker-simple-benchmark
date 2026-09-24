@@ -1,6 +1,6 @@
 """Korean Reranker 리더보드 (streamlit).
 
-집계·표는 README(`build_readme_mteb2x.py`)와 **동일한 소스·방식**을 재사용한다:
+집계는 `stage2_results.py`(산점도와 공용)를 재사용한다:
   - 결과: `eval/results/stage2/<model>/<task>.json` (task별 mteb 공식 get_score 값 = subset·split 평균,
     예: MultiLongDocRetrieval = dev+test 평균).
   - 표: 공식 9-subset mean + MLDR 제외 8-subset mean(listwise/long-doc OOD 공정 비교) + per-dataset NDCG@10.
@@ -15,7 +15,7 @@ import pandas as pd
 import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from build_readme_mteb2x import collect, _mean_over, mean_pps, size_label, TASKS, MLDR, PPS_NOTE  # noqa: E402
+from stage2_results import collect, _mean_over, mean_pps, size_label, TASKS, MLDR, PPS_NOTE  # noqa: E402
 
 st.set_page_config(layout="wide")
 

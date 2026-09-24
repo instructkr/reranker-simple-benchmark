@@ -16,7 +16,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FixedLocator, FixedFormatter
 
-from build_readme_mteb2x import collect, MODEL_SIZES, _mean_over, TASKS
+from stage2_results import collect, MODEL_SIZES, _mean_over, TASKS
 
 V2_ROOT = Path(__file__).resolve().parents[1]
 OUT = V2_ROOT / "assets" / "model_size_vs_ndcg9.png"
