@@ -103,6 +103,10 @@ def mean_pps(data, model):
     return None if any(v is None for v in vals) else sum(vals) / len(vals)
 
 
+def _fmt_pps(v):
+    return f"{v:.1f}" if v is not None else "—"
+
+
 def _mean_table(data, tasks, title, note=None):
     rows = []
     for model in data:
@@ -110,17 +114,19 @@ def _mean_table(data, tasks, title, note=None):
         if r:
             rows.append((model,) + r)
     rows.sort(key=lambda x: x[3], reverse=True)
+    mldr_col = MLDR in tasks  # MLDR 을 포함한 표에만 장문 처리량 열
     out = [f"#### {title}", ""]
     if note:
         out += [note, ""]
-    out.append("| Model | Params | Mean NDCG@1 | Mean NDCG@5 | Mean NDCG@10 | Mean PPS |")
-    out.append("|---|---|---|---|---|---|")
+    out.append("| Model | Params | Mean NDCG@1 | Mean NDCG@5 | Mean NDCG@10 | Mean PPS |" + (" MLDR PPS |" if mldr_col else ""))
+    out.append("|---|---|---|---|---|---|" + ("---|" if mldr_col else ""))
     for model, n1, n5, n10 in rows:
-        pps = mean_pps(data, model)
-        out.append(f"| {model} | {size_label(model)} | {n1:.4f} | {n5:.4f} | {n10:.4f} | "
-                   f"{f'{pps:.1f}' if pps is not None else '—'} |")
+        cells = f"| {model} | {size_label(model)} | {n1:.4f} | {n5:.4f} | {n10:.4f} | {_fmt_pps(mean_pps(data, model))} |"
+        if mldr_col:
+            cells += f" {_fmt_pps((data[model].get(MLDR) or {}).get('pps'))} |"
+        out.append(cells)
     out.append("")
-    out += [PPS_NOTE, ""]
+    out += [PPS_NOTE + (" **MLDR PPS** = 장문 MultiLongDocRetrieval 의 처리량." if mldr_col else ""), ""]
     return out
 
 

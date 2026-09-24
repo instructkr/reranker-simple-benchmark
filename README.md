@@ -74,27 +74,27 @@ uv run streamlit run leaderboard_reranker.py
 #### Results — Official kMTEB (9 subsets)
 **공식 9개 subset 을 모두 평가한 모델**의 mean NDCG@1/5/10 (NDCG@10 내림차순). listwise 모델처럼 장문(MLDR)을 완료하지 못한 모델은 아래 **8-subset 표**에서 공정 비교합니다.
 
-| Model | Params | Mean NDCG@1 | Mean NDCG@5 | Mean NDCG@10 | Mean PPS |
-|---|---|---|---|---|---|
-| tomaarsen/Qwen3-Reranker-8B-seq-cls | 7.6B | 0.8316 | 0.8871 | 0.9004 | 16.9 |
-| tomaarsen/Qwen3-Reranker-4B-seq-cls | 4.0B | 0.8251 | 0.8812 | 0.8956 | 27.2 |
-| nlpai-lab/KURE-Reranker-base | 1.7B | 0.8077 | 0.8694 | 0.8828 | 60.5 |
-| nlpai-lab/KURE-Reranker-nano | 149M | 0.8071 | 0.8668 | 0.8808 | 530.9 |
-| zeroentropy/zerank-2-reranker | 4.0B | 0.7803 | 0.8524 | 0.8695 | 33.0 |
-| lightonai/LightOn-rerank-PW-4B | 4.5B | 0.7798 | 0.8513 | 0.8664 | 16.8 |
-| mixedbread-ai/mxbai-rerank-large-v2 | 1.5B | 0.7860 | 0.8474 | 0.8661 | 72.9 |
-| BAAI/bge-reranker-v2-m3 | 568M | 0.7682 | 0.8414 | 0.8586 | 453.5 |
-| tomaarsen/Qwen3-Reranker-0.6B-seq-cls | 596M | 0.7708 | 0.8435 | 0.8585 | 111.5 |
-| nvidia/llama-nemotron-rerank-1b-v2 | 1.2B | 0.7693 | 0.8354 | 0.8522 | 142.7 |
-| nlpai-lab/LAMAR-600m | 568M | 0.7509 | 0.8240 | 0.8406 | 458.8 |
-| dragonkue/bge-reranker-v2-m3-ko | 568M | 0.7281 | 0.8060 | 0.8263 | 450.6 |
-| BAAI/bge-reranker-v2-gemma | 2.5B | 0.7383 | 0.8007 | 0.8186 | 65.7 |
-| upskyy/ko-reranker-8k | 568M | 0.6906 | 0.7883 | 0.8085 | 453.3 |
-| Dongjin-kr/ko-reranker | 560M | 0.6866 | 0.7748 | 0.7950 | 509.0 |
-| telepix/PIXIE-Spell-Reranker-Preview-0.6B | 596M | 0.6927 | 0.7599 | 0.7806 | 111.6 |
-| cross-encoder/ettin-reranker-1b-v1 | 1.0B | 0.5686 | 0.6605 | 0.6901 | 55.5 |
+| Model | Params | Mean NDCG@1 | Mean NDCG@5 | Mean NDCG@10 | Mean PPS | MLDR PPS |
+|---|---|---|---|---|---|---|
+| tomaarsen/Qwen3-Reranker-8B-seq-cls | 7.6B | 0.8316 | 0.8871 | 0.9004 | 16.9 | 0.7 |
+| tomaarsen/Qwen3-Reranker-4B-seq-cls | 4.0B | 0.8251 | 0.8812 | 0.8956 | 27.2 | 1.1 |
+| nlpai-lab/KURE-Reranker-base | 1.7B | 0.8077 | 0.8694 | 0.8828 | 60.5 | 2.6 |
+| nlpai-lab/KURE-Reranker-nano | 149M | 0.8071 | 0.8668 | 0.8808 | 530.9 | 16.5 |
+| zeroentropy/zerank-2-reranker | 4.0B | 0.7803 | 0.8524 | 0.8695 | 33.0 | 1.1 |
+| lightonai/LightOn-rerank-PW-4B | 4.5B | 0.7798 | 0.8513 | 0.8664 | 16.8 | 0.7 |
+| mixedbread-ai/mxbai-rerank-large-v2 | 1.5B | 0.7860 | 0.8474 | 0.8661 | 72.9 | 3.2 |
+| BAAI/bge-reranker-v2-m3 | 568M | 0.7682 | 0.8414 | 0.8586 | 453.5 | 9.3 |
+| tomaarsen/Qwen3-Reranker-0.6B-seq-cls | 596M | 0.7708 | 0.8435 | 0.8585 | 111.5 | 4.2 |
+| nvidia/llama-nemotron-rerank-1b-v2 | 1.2B | 0.7693 | 0.8354 | 0.8522 | 142.7 | 3.9 |
+| nlpai-lab/LAMAR-600m | 568M | 0.7509 | 0.8240 | 0.8406 | 458.8 | 9.2 |
+| dragonkue/bge-reranker-v2-m3-ko | 568M | 0.7281 | 0.8060 | 0.8263 | 450.6 | 9.2 |
+| BAAI/bge-reranker-v2-gemma | 2.5B | 0.7383 | 0.8007 | 0.8186 | 65.7 | 2.5 |
+| upskyy/ko-reranker-8k | 568M | 0.6906 | 0.7883 | 0.8085 | 453.3 | 9.2 |
+| Dongjin-kr/ko-reranker | 560M | 0.6866 | 0.7748 | 0.7950 | 509.0 | 272.7 |
+| telepix/PIXIE-Spell-Reranker-Preview-0.6B | 596M | 0.6927 | 0.7599 | 0.7806 | 111.6 | 4.3 |
+| cross-encoder/ettin-reranker-1b-v1 | 1.0B | 0.5686 | 0.6605 | 0.6901 | 55.5 | 3.8 |
 
-**Mean PPS** = 추론 처리량(query–document pairs/s), MLDR 제외 8 subset 평균. RTX A6000 1장, bf16 + flash_attention_2, `--speed` 로 측정 (측정 방식은 *Methodology* 참고).
+**Mean PPS** = 추론 처리량(query–document pairs/s), MLDR 제외 8 subset 평균. RTX A6000 1장, bf16 + flash_attention_2, `--speed` 로 측정 (측정 방식은 *Methodology* 참고). **MLDR PPS** = 장문 MultiLongDocRetrieval 의 처리량.
 
 > `jinaai/jina-reranker-v3` 와 `jinaai/jina-reranker-v3.5` 는 **listwise** reranker 로, 장문(`MultiLongDocRetrieval`)에서 다른 모델과 **동일 조건(8192)으로 공정 비교가 불가능**하여 두 모델 모두 MLDR 을 N/A 로 두고 위 9-subset 평가에서 제외합니다. 실제 후보셋(정답 ∪ BM25 top-50 ≈ 51개, 문서 토큰 길이 mean ≈ 8000)을 8192 로 재랭킹하면 51개가 단일 컨텍스트에 들어가지 않아 블록으로 분할되는데, **블록을 키우면 OOM**(80GB GPU 에서도 첫 블록 ≈ 126k 토큰), **블록을 줄이면**(예: 블록당 2문서) jina 의 listwise 상호작용이 사실상 사라져 pointwise 에 가까워지고 점수가 임의의 블록 크기(다른 모델엔 없는 노브)에 의존하게 됩니다. 즉 장문 task 는 listwise reranker 의 **token-length OOD** 로 공정 측정이 원천적으로 어렵습니다. 아래 8-subset 표에서 비교하세요.
 

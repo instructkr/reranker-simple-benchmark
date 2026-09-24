@@ -21,14 +21,20 @@ st.set_page_config(layout="wide")
 
 
 def _mean_df(data, tasks):
+    mldr_col = MLDR in tasks  # MLDR 을 포함한 표에만 장문 처리량 열 (README 와 동일)
     rows = []
     for model in data:
         r = _mean_over(data, model, tasks)  # tasks 전부 있어야 값(하나라도 결측이면 제외)
         if r:
             pps = mean_pps(data, model)
-            rows.append([model, size_label(model), round(r[0], 4), round(r[1], 4), round(r[2], 4),
-                         round(pps, 1) if pps is not None else None])
-    df = pd.DataFrame(rows, columns=["Model", "Params", "Mean NDCG@1", "Mean NDCG@5", "Mean NDCG@10", "Mean PPS"])
+            row = [model, size_label(model), round(r[0], 4), round(r[1], 4), round(r[2], 4),
+                   round(pps, 1) if pps is not None else None]
+            if mldr_col:
+                v = (data[model].get(MLDR) or {}).get("pps")
+                row.append(round(v, 1) if v is not None else None)
+            rows.append(row)
+    cols = ["Model", "Params", "Mean NDCG@1", "Mean NDCG@5", "Mean NDCG@10", "Mean PPS"] + (["MLDR PPS"] if mldr_col else [])
+    df = pd.DataFrame(rows, columns=cols)
     return df.sort_values("Mean NDCG@10", ascending=False).reset_index(drop=True)
 
 
