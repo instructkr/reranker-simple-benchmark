@@ -1,9 +1,9 @@
 """stage2 결과 → README 표 3개 생성.
 
-표1: 공식 kMTEB 9-subset mean NDCG@1/5/10 (NDCG@10 내림차순).
-표2: MLDR 제외 8-subset mean NDCG@1/5/10 (listwise/long-doc OOD 공정 비교).
+표1: 공식 kMTEB 9-subset mean NDCG@10 + 8-task PPS + MLDR PPS (NDCG@10 내림차순).
+표2: MLDR 제외 8-subset mean NDCG@1/5/10 + 8-task PPS (listwise/long-doc OOD 공정 비교).
 표3: 모델별 subset(dataset)별 NDCG@10.
-각 표에 Params(모델 크기, 실측) 열 포함. 표1·2 에는 Mean PPS(추론 처리량, `--speed` 결과) 열 포함.
+각 표에 Params(모델 크기, 실측) 열 포함. PPS = 추론 처리량(`--speed` 결과).
 
 사용:
   uv run python eval/build_readme_mteb2x.py            # markdown 을 stdout 출력
@@ -47,9 +47,10 @@ def collect():
 
 
 MLDR = "MultiLongDocRetrieval"  # 장문 task — listwise 모델은 token-length OOD 로 8192 tractable 초과
-# Mean PPS 는 MLDR 제외 8 subset 평균 — 장문에선 모델별 입력 상한(512~8192)이 처리량을 지배하므로.
+# 8-task PPS 는 MLDR 제외 8 subset 평균 — 장문에선 모델별 입력 상한(512~8192)이 처리량을 지배하므로
+# MLDR 은 평균에 넣지 않고 별도 열(MLDR PPS)로 둔다.
 PPS_TASKS = [t for t in TASKS if t != MLDR]
-PPS_NOTE = ("**Mean PPS** = 추론 처리량(query–document pairs/s), MLDR 제외 8 subset 평균. RTX A6000 1장, "
+PPS_NOTE = ("**8-task PPS** = 추론 처리량(query–document pairs/s), MLDR 제외 8 subset 평균. RTX A6000 1장, "
             "bf16 + flash_attention_2, `--speed` 로 측정 (측정 방식은 *Methodology* 참고).")
 
 # 모델 파라미터 수(실측: 캐시된 safetensors 헤더의 tensor shape 합). 표 Params 열·산점도 x축에 사용.
@@ -114,17 +115,25 @@ def _mean_table(data, tasks, title, note=None):
         if r:
             rows.append((model,) + r)
     rows.sort(key=lambda x: x[3], reverse=True)
-    mldr_col = MLDR in tasks  # MLDR 을 포함한 표에만 장문 처리량 열
+    # 공식 9-subset 표(MLDR 포함)는 순위표: mean NDCG@10 + 8-task PPS + 장문 처리량(MLDR PPS).
+    # 8-subset 표는 NDCG@1/5/10 과 8-task PPS.
+    mldr_col = MLDR in tasks
     out = [f"#### {title}", ""]
     if note:
         out += [note, ""]
-    out.append("| Model | Params | Mean NDCG@1 | Mean NDCG@5 | Mean NDCG@10 | Mean PPS |" + (" MLDR PPS |" if mldr_col else ""))
-    out.append("|---|---|---|---|---|---|" + ("---|" if mldr_col else ""))
+    if mldr_col:
+        out.append("| Model | Params | Mean NDCG@10 | 8-task PPS | MLDR PPS |")
+        out.append("|---|---|---|---|---|")
+    else:
+        out.append("| Model | Params | Mean NDCG@1 | Mean NDCG@5 | Mean NDCG@10 | 8-task PPS |")
+        out.append("|---|---|---|---|---|---|")
     for model, n1, n5, n10 in rows:
-        cells = f"| {model} | {size_label(model)} | {n1:.4f} | {n5:.4f} | {n10:.4f} | {_fmt_pps(mean_pps(data, model))} |"
+        pps8 = _fmt_pps(mean_pps(data, model))
         if mldr_col:
-            cells += f" {_fmt_pps((data[model].get(MLDR) or {}).get('pps'))} |"
-        out.append(cells)
+            mldr = _fmt_pps((data[model].get(MLDR) or {}).get("pps"))
+            out.append(f"| {model} | {size_label(model)} | {n10:.4f} | {pps8} | {mldr} |")
+        else:
+            out.append(f"| {model} | {size_label(model)} | {n1:.4f} | {n5:.4f} | {n10:.4f} | {pps8} |")
     out.append("")
     out += [PPS_NOTE + (" **MLDR PPS** = 장문 MultiLongDocRetrieval 의 처리량." if mldr_col else ""), ""]
     return out
@@ -137,7 +146,7 @@ def build_tables(data):
     out += _mean_table(
         data, TASKS,
         "Results — Official kMTEB (9 subsets)",
-        "모든 9개 공식 subset 을 평가한 모델의 mean NDCG@k (NDCG@10 내림차순). "
+        "모든 9개 공식 subset 을 평가한 모델의 9-subset mean NDCG@10 (내림차순). "
         "listwise 모델처럼 장문(MLDR)을 완료하지 못한 모델은 아래 8-subset 표를 참고하세요.",
     )
     # 표2: MLDR 제외 8-subset (listwise/long-doc OOD 공정 비교 — 전 모델 공통 기준)

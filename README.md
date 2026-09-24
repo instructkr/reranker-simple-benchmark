@@ -22,11 +22,11 @@ BM25 기반 Stage 1 검색(토크나이저별 비교, 실행 코드, 결과)은 
 | [PublicHealthQA](https://huggingface.co/datasets/xhluca/publichealth-qa) | 의료·공중보건 도메인 문서 검색 | test | 77 |
 | [BelebeleRetrieval](https://huggingface.co/datasets/facebook/belebele) | FLORES-200 기반 한국어 문서 검색 (kor subset) | test | 900 |
 | [MrTidyRetrieval](https://huggingface.co/datasets/mteb/mrtidy) | Wikipedia 기반 한국어 문서 검색 | test | 421 |
-| [MultiLongDocRetrieval](https://huggingface.co/datasets/Shitao/MLDR) | 다양한 도메인 한국어 **장문** 검색 | dev+test | 400 |
 | [SQuADKorV1Retrieval](https://huggingface.co/datasets/yjoonjang/squad_kor_v1) | 한국어 SQuAD v1.0 기반 검색 | test | 5,774 |
-| LawIRKo | 한국어 법률 정보 검색 | test | 3,563 |
+| [LawIRKo](https://huggingface.co/datasets/on-and-on/lawgov_ir-ko) | 한국어 법률 정보 검색 | test | 3,563 |
+| [MultiLongDocRetrieval](https://huggingface.co/datasets/Shitao/MLDR) | 다양한 도메인 한국어 **장문** 검색 | dev+test | 400 |
 
-> **Note**: 기존 XPQARetrieval·WebFAQRetrieval 은 공식 MTEB(kor, v2) subset 이 아니므로 제외하고, 공식 task 인 LawIRKo 를 추가하여 공식 벤치마크와 정합시켰습니다. SQuADKorV1Retrieval 등 일부 task 는 `eval/custom_mteb_tasks.py` 에 MTEB Task 클래스로 구현되어 있습니다.
+> **Note**: 기존 XPQARetrieval·WebFAQRetrieval 은 공식 MTEB(kor, v2) subset 이 아니므로 제외합니다.
 
 #### Evaluation Code
 Stage 2 reranking 은 **정답(gold) 문서를 재랭킹 후보에 항상 포함**시키는 방식으로 평가합니다 (아래 *Methodology* 참고).
@@ -60,48 +60,47 @@ uv run streamlit run leaderboard_reranker.py
 ```
 
 #### Methodology
-- **Gold-injected reranking (올바른 재랭킹 평가)**: 각 query 의 **정답(gold) 문서를 재랭킹 후보 집합에 항상 포함**시킨 뒤 (후보 = BM25 top-50 ∪ gold) reranker 로 재랭킹합니다. BM25 가 정답을 top-50 안에 놓치더라도 reranker 의 순수 랭킹 품질을 측정하기 위함입니다.
-- **채점**: [mteb](https://github.com/embeddings-benchmark/mteb) **2.x** 의 공식 채점(`TaskResult.get_score`, eval_splits·subset 평균)을 사용합니다.
-- **최대 시퀀스 길이 (max_length)**: **모든 모델을 `max_length=8192` 로 측정**합니다. 단, **아키텍처상 8192 를 지원하지 않는 모델은 네이티브 최대 길이로 측정**합니다 — **`Dongjin-kr/ko-reranker` = 512** (XLM-RoBERTa 계열, max position 514), `cross-encoder/ettin-reranker-1b-v1` = 7999. 각 결과 파일(`eval/results/stage2_mteb2x/<model>/<task>.json`)에 실제 적용된 `_max_length` 가 기록됩니다.
-- **후보 깊이**: gold 외 BM25 top-50 negative (`_neg_top_k=50`).
-- **추론 처리량 (PPS, `--speed`)**: NDCG 와 같은 로드(bf16 + `flash_attention_2`, 미지원 아키텍처는 sdpa)로, NDCG 가 채점한 쌍(gold ∪ BM25 top-50)에서 query 단위로 ~512쌍(seed 0)을 뽑아 task 마다 측정합니다. batch size 를 8 부터 2배씩 첫 OOM 까지 늘리며, 각 batch size 에서 샘플을 그 배수로 반복·길이 내림차순 정렬한 뒤 warmup 1회 + 3회 반복합니다. 모델 forward 호출만 CUDA event 로 재므로 토크나이즈·데이터 로딩은 제외되며, PPS = 처리 쌍 수 / forward 시간 합, 가장 빠른 batch size 의 값을 기록합니다 (`pps`, `pps_batch_size`, `pps_sweep`; 측정 GPU 에 다른 프로세스가 있었으면 `_pps_gpu_shared=true`). 모델별 입력 길이 상한·최적 batch 에서의 처리량이며, 동일 토큰 길이의 연산 속도나 RAG 파이프라인 지연을 뜻하지 않습니다. listwise 인 jina-reranker-v3/v3.5 는 query 의 후보를 한 시퀀스로 처리해 batch size 가 없으므로 1회 측정합니다. 측정 코드: `eval/speed.py`.
-- **mxbai-rerank-large-v2 · bge-reranker-v2-gemma 로딩**: 두 yes/no 로짓 reranker 는 sentence-transformers CrossEncoder(causal LM + `LogitScore`)로 로드합니다. ST 는 마지막 위치의 로짓만 계산(`logits_to_keep=1`)하므로 라이브러리 경로(mxbai_rerank, FlagLLMReranker)의 [batch, seq, vocab] 전체 로짓 계산을 피합니다. mxbai 는 repo 의 공식 ST 설정, gemma 는 FlagLLMReranker 입력 포맷(`A: {query}` / `B: {passage}` / prompt, 'Yes' 로짓)을 그대로 옮긴 구성이며, 라이브러리 대비 점수 Pearson 0.9994 / 0.9997 · query 별 top-1 동일입니다.
+- **Gold-injected reranking**: 각 query 의 **정답(gold) 문서를 재랭킹 후보 집합에 항상 포함**시킨 뒤 (후보 = BM25 top-50 ∪ gold) reranker 로 재랭킹합니다. BM25 가 정답을 top-50 안에 놓치더라도 reranker 의 순수 랭킹 품질을 측정하기 위함입니다.
+- **Max sequence length**: **모든 모델을 `max_length=8192` 로 측정**합니다. 단, **아키텍처상 8192 를 지원하지 않는 모델은 네이티브 최대 길이로 측정**합니다. 각 결과 파일(`eval/results/stage2/<model>/<task>.json`)에 실제 적용된 `_max_length` 가 기록됩니다.
+	- `Dongjin-kr/ko-reranker` = 512
+	- `cross-encoder/ettin-reranker-1b-v1` = 7999
+- **Pairs Per Second (PPS)**: [Ettin-Reranker 블로그](https://huggingface.co/blog/ettin-reranker)를 참고하여, batch size 를 8 부터 2배씩 첫 OOM 까지 늘리며, 각 batch size 에서 샘플을 그 배수로 반복·길이 내림차순 정렬한 뒤 warmup 1회 + 3회 반복합니다. 모델 forward 호출만 CUDA event 로 재므로 토크나이즈·데이터 로딩은 제외되며, PPS = 처리 쌍 수 / forward 시간 합, 가장 빠른 batch size 의 값을 기록합니다 (`pps`, `pps_batch_size`, `pps_sweep`). 모델별 입력 길이 상한·최적 batch 에서의 처리량이며, 동일 토큰 길이의 연산 속도나 RAG 파이프라인 지연을 뜻하지 않습니다. listwise 인 jina-reranker-v3/v3.5 는 query 의 후보를 한 시퀀스로 처리해 batch size 가 없으므로 1회 측정합니다.
 
 **모델 크기 vs. 성능 (9-subset)** — x축 파라미터 수(log), y축 9-subset mean NDCG@10. jina-reranker-v3/v3.5 는 제외.
 
 ![Reranker model size vs. NDCG@10 (official kMTEB 9 subsets)](assets/model_size_vs_ndcg9.png)
 
 #### Results — Official kMTEB (9 subsets)
-**공식 9개 subset 을 모두 평가한 모델**의 mean NDCG@1/5/10 (NDCG@10 내림차순). listwise 모델처럼 장문(MLDR)을 완료하지 못한 모델은 아래 **8-subset 표**에서 공정 비교합니다.
+**공식 9개 subset 을 모두 평가한 모델**의 9-subset mean NDCG@10 (내림차순). listwise 모델처럼 장문(MLDR)을 완료하지 못한 모델은 아래 **8-subset 표**에서 공정 비교합니다.
 
-| Model | Params | Mean NDCG@1 | Mean NDCG@5 | Mean NDCG@10 | Mean PPS | MLDR PPS |
-|---|---|---|---|---|---|---|
-| tomaarsen/Qwen3-Reranker-8B-seq-cls | 7.6B | 0.8316 | 0.8871 | 0.9004 | 16.9 | 0.7 |
-| tomaarsen/Qwen3-Reranker-4B-seq-cls | 4.0B | 0.8251 | 0.8812 | 0.8956 | 27.2 | 1.1 |
-| nlpai-lab/KURE-Reranker-base | 1.7B | 0.8077 | 0.8694 | 0.8828 | 60.5 | 2.6 |
-| nlpai-lab/KURE-Reranker-nano | 149M | 0.8071 | 0.8668 | 0.8808 | 530.9 | 16.5 |
-| zeroentropy/zerank-2-reranker | 4.0B | 0.7803 | 0.8524 | 0.8695 | 33.0 | 1.1 |
-| lightonai/LightOn-rerank-PW-4B | 4.5B | 0.7798 | 0.8513 | 0.8664 | 16.8 | 0.7 |
-| mixedbread-ai/mxbai-rerank-large-v2 | 1.5B | 0.7860 | 0.8474 | 0.8661 | 72.9 | 3.2 |
-| BAAI/bge-reranker-v2-m3 | 568M | 0.7682 | 0.8414 | 0.8586 | 453.5 | 9.3 |
-| tomaarsen/Qwen3-Reranker-0.6B-seq-cls | 596M | 0.7708 | 0.8435 | 0.8585 | 111.5 | 4.2 |
-| nvidia/llama-nemotron-rerank-1b-v2 | 1.2B | 0.7693 | 0.8354 | 0.8522 | 142.7 | 3.9 |
-| nlpai-lab/LAMAR-600m | 568M | 0.7509 | 0.8240 | 0.8406 | 458.8 | 9.2 |
-| dragonkue/bge-reranker-v2-m3-ko | 568M | 0.7281 | 0.8060 | 0.8263 | 450.6 | 9.2 |
-| BAAI/bge-reranker-v2-gemma | 2.5B | 0.7383 | 0.8007 | 0.8186 | 65.7 | 2.5 |
-| upskyy/ko-reranker-8k | 568M | 0.6906 | 0.7883 | 0.8085 | 453.3 | 9.2 |
-| Dongjin-kr/ko-reranker | 560M | 0.6866 | 0.7748 | 0.7950 | 509.0 | 272.7 |
-| telepix/PIXIE-Spell-Reranker-Preview-0.6B | 596M | 0.6927 | 0.7599 | 0.7806 | 111.6 | 4.3 |
-| cross-encoder/ettin-reranker-1b-v1 | 1.0B | 0.5686 | 0.6605 | 0.6901 | 55.5 | 3.8 |
+| Model | Params | Mean NDCG@10 | 8-task PPS | MLDR PPS |
+|---|---|---|---|---|
+| tomaarsen/Qwen3-Reranker-8B-seq-cls | 7.6B | 0.9004 | 16.9 | 0.7 |
+| tomaarsen/Qwen3-Reranker-4B-seq-cls | 4.0B | 0.8956 | 27.2 | 1.1 |
+| nlpai-lab/KURE-Reranker-base | 1.7B | 0.8828 | 60.5 | 2.6 |
+| nlpai-lab/KURE-Reranker-nano | 149M | 0.8808 | 530.9 | 16.5 |
+| zeroentropy/zerank-2-reranker | 4.0B | 0.8695 | 33.0 | 1.1 |
+| lightonai/LightOn-rerank-PW-4B | 4.5B | 0.8664 | 16.8 | 0.7 |
+| mixedbread-ai/mxbai-rerank-large-v2 | 1.5B | 0.8661 | 72.9 | 3.2 |
+| BAAI/bge-reranker-v2-m3 | 568M | 0.8586 | 453.5 | 9.3 |
+| tomaarsen/Qwen3-Reranker-0.6B-seq-cls | 596M | 0.8585 | 111.5 | 4.2 |
+| nvidia/llama-nemotron-rerank-1b-v2 | 1.2B | 0.8522 | 142.7 | 3.9 |
+| nlpai-lab/LAMAR-600m | 568M | 0.8406 | 458.8 | 9.2 |
+| dragonkue/bge-reranker-v2-m3-ko | 568M | 0.8263 | 450.6 | 9.2 |
+| BAAI/bge-reranker-v2-gemma | 2.5B | 0.8186 | 65.7 | 2.5 |
+| upskyy/ko-reranker-8k | 568M | 0.8085 | 453.3 | 9.2 |
+| Dongjin-kr/ko-reranker | 560M | 0.7950 | 509.0 | 272.7 |
+| telepix/PIXIE-Spell-Reranker-Preview-0.6B | 596M | 0.7806 | 111.6 | 4.3 |
+| cross-encoder/ettin-reranker-1b-v1 | 1.0B | 0.6901 | 55.5 | 3.8 |
 
-**Mean PPS** = 추론 처리량(query–document pairs/s), MLDR 제외 8 subset 평균. RTX A6000 1장, bf16 + flash_attention_2, `--speed` 로 측정 (측정 방식은 *Methodology* 참고). **MLDR PPS** = 장문 MultiLongDocRetrieval 의 처리량.
+**8-task PPS** = 추론 처리량(query–document pairs/s), MLDR 제외 8 subset 평균. RTX A6000 1장, bf16 + flash_attention_2, `--speed` 로 측정 (측정 방식은 *Methodology* 참고). **MLDR PPS** = 장문 MultiLongDocRetrieval 의 처리량.
 
 > `jinaai/jina-reranker-v3` 와 `jinaai/jina-reranker-v3.5` 는 **listwise** reranker 로, 장문(`MultiLongDocRetrieval`)에서 다른 모델과 **동일 조건(8192)으로 공정 비교가 불가능**하여 두 모델 모두 MLDR 을 N/A 로 두고 위 9-subset 평가에서 제외합니다. 실제 후보셋(정답 ∪ BM25 top-50 ≈ 51개, 문서 토큰 길이 mean ≈ 8000)을 8192 로 재랭킹하면 51개가 단일 컨텍스트에 들어가지 않아 블록으로 분할되는데, **블록을 키우면 OOM**(80GB GPU 에서도 첫 블록 ≈ 126k 토큰), **블록을 줄이면**(예: 블록당 2문서) jina 의 listwise 상호작용이 사실상 사라져 pointwise 에 가까워지고 점수가 임의의 블록 크기(다른 모델엔 없는 노브)에 의존하게 됩니다. 즉 장문 task 는 listwise reranker 의 **token-length OOD** 로 공정 측정이 원천적으로 어렵습니다. 아래 8-subset 표에서 비교하세요.
 
 #### Results — MLDR 제외 (8 subsets · listwise / long-doc OOD 공정 비교)
 장문(`MultiLongDocRetrieval`)을 제외한 **8개 공통 subset** 기준 mean NDCG@1/5/10 (NDCG@10 내림차순). listwise 모델(`jina-reranker-v3`, `jina-reranker-v3.5`)을 포함해 **모든 모델을 동일 기준으로 비교**합니다. (MLDR 이 가장 어려운 task 라 전 모델의 mean 이 9-subset 대비 상승합니다 — 표 간 절대값 비교 금지.)
 
-| Model | Params | Mean NDCG@1 | Mean NDCG@5 | Mean NDCG@10 | Mean PPS |
+| Model | Params | Mean NDCG@1 | Mean NDCG@5 | Mean NDCG@10 | 8-task PPS |
 |---|---|---|---|---|---|
 | tomaarsen/Qwen3-Reranker-8B-seq-cls | 7.6B | 0.8424 | 0.8966 | 0.9102 | 16.9 |
 | tomaarsen/Qwen3-Reranker-4B-seq-cls | 4.0B | 0.8373 | 0.8918 | 0.9062 | 27.2 |
@@ -123,7 +122,7 @@ uv run streamlit run leaderboard_reranker.py
 | upskyy/ko-reranker-8k | 568M | 0.7210 | 0.8160 | 0.8348 | 453.3 |
 | cross-encoder/ettin-reranker-1b-v1 | 1.0B | 0.6138 | 0.7034 | 0.7307 | 55.5 |
 
-**Mean PPS** = 추론 처리량(query–document pairs/s), MLDR 제외 8 subset 평균. RTX A6000 1장, bf16 + flash_attention_2, `--speed` 로 측정 (측정 방식은 *Methodology* 참고).
+**8-task PPS** = 추론 처리량(query–document pairs/s), MLDR 제외 8 subset 평균. RTX A6000 1장, bf16 + flash_attention_2, `--speed` 로 측정 (측정 방식은 *Methodology* 참고).
 
 #### Per-dataset NDCG@10
 

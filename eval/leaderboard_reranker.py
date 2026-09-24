@@ -21,19 +21,23 @@ st.set_page_config(layout="wide")
 
 
 def _mean_df(data, tasks):
-    mldr_col = MLDR in tasks  # MLDR 을 포함한 표에만 장문 처리량 열 (README 와 동일)
+    # README 와 동일: 공식 9-subset 표(MLDR 포함)는 mean NDCG@10 + 8-task PPS + MLDR PPS,
+    # 8-subset 표는 NDCG@1/5/10 + 8-task PPS.
+    mldr_col = MLDR in tasks
+    r1 = lambda v, n: round(v, n) if v is not None else None  # noqa: E731
     rows = []
     for model in data:
         r = _mean_over(data, model, tasks)  # tasks 전부 있어야 값(하나라도 결측이면 제외)
-        if r:
-            pps = mean_pps(data, model)
-            row = [model, size_label(model), round(r[0], 4), round(r[1], 4), round(r[2], 4),
-                   round(pps, 1) if pps is not None else None]
-            if mldr_col:
-                v = (data[model].get(MLDR) or {}).get("pps")
-                row.append(round(v, 1) if v is not None else None)
-            rows.append(row)
-    cols = ["Model", "Params", "Mean NDCG@1", "Mean NDCG@5", "Mean NDCG@10", "Mean PPS"] + (["MLDR PPS"] if mldr_col else [])
+        if not r:
+            continue
+        pps8 = r1(mean_pps(data, model), 1)
+        if mldr_col:
+            rows.append([model, size_label(model), r1(r[2], 4), pps8,
+                         r1((data[model].get(MLDR) or {}).get("pps"), 1)])
+        else:
+            rows.append([model, size_label(model), r1(r[0], 4), r1(r[1], 4), r1(r[2], 4), pps8])
+    cols = (["Model", "Params", "Mean NDCG@10", "8-task PPS", "MLDR PPS"] if mldr_col else
+            ["Model", "Params", "Mean NDCG@1", "Mean NDCG@5", "Mean NDCG@10", "8-task PPS"])
     df = pd.DataFrame(rows, columns=cols)
     return df.sort_values("Mean NDCG@10", ascending=False).reset_index(drop=True)
 
