@@ -92,11 +92,8 @@ def main():
     ax.set_xlim(min(0.45, min(xs) * 0.8), 11)
     ax.set_ylim(min(ys) - 0.02, max(ys) + 0.02)
 
-    ax.set_xlabel("Model size (parameters, log scale)", fontsize=11, color=INK)
-    ax.set_ylabel("Mean NDCG@10  (official MTEB(kor, v2), 9 subsets)", fontsize=11, color=INK)
-    ax.set_title("Reranker model size vs. accuracy  —  gold-injected reranking, max_length 8192\n"
-                 "(jina-reranker-v3/v3.5 excluded: listwise long-doc token-length OOD)",
-                 fontsize=11.5, color=INK, pad=12)
+    ax.set_xlabel("Model size (parameters)", fontsize=11, color=INK)
+    ax.set_ylabel("Mean nDCG@10", fontsize=11, color=INK)
 
     ax.grid(True, which="major", color="#e6e9ef", linewidth=0.8, zorder=0)
     for s in ("top", "right"):
