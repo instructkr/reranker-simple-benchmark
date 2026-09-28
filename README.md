@@ -1,4 +1,4 @@
-# Make Reranker Benchmark Simple Again
+# Reranker Simple Benchmark
 ## Purpose
 * 본 프로젝트는 Reranker Benchmark Evaluation을 최소한의 의존성으로 경량화하여, 누구나 쉽게 실행하고 즉각적인 결과를 얻을 수 있도록 설계되었습니다.
 
@@ -57,33 +57,33 @@ cd eval
 uv run streamlit run leaderboard_reranker.py
 ```
 
-**모델 크기 vs. 성능 (9-subset)** — x축: 파라미터 수(log), y축: 9-subset mean NDCG@10. jina-reranker-v3/v3.5 는 제외.
+**추론 처리량 vs. 성능** (x축: Mean PPS, 점 색: 모델 크기, jina-reranker-v3/v3.5 는 제외)
 
-![Reranker model size vs. NDCG@10 (official kMTEB 9 subsets)](assets/model_size_vs_ndcg9.png)
+![Reranker throughput (mean PPS) vs. NDCG@10 (official kMTEB 9 subsets)](assets/pps_vs_ndcg9.png)
 
 ### Results — Official kMTEB (9 subsets)
 <!-- **공식 9개 subset 을 모두 평가한 모델**의 9-subset mean NDCG@10, PPS -->
-| Model | Params | Mean NDCG@10 | 8-task PPS | MLDR PPS |
-|---|---|---|---|---|
-| tomaarsen/Qwen3-Reranker-8B-seq-cls | 7.6B | 0.9004 | 16.9 | 0.7 |
-| tomaarsen/Qwen3-Reranker-4B-seq-cls | 4.0B | 0.8956 | 27.2 | 1.1 |
-| nlpai-lab/KURE-Reranker-base | 1.7B | 0.8828 | 60.5 | 2.6 |
-| nlpai-lab/KURE-Reranker-nano | 149M | 0.8808 | 530.9 | 16.5 |
-| zeroentropy/zerank-2-reranker | 4.0B | 0.8695 | 33.0 | 1.1 |
-| lightonai/LightOn-rerank-PW-4B | 4.5B | 0.8664 | 16.8 | 0.7 |
-| mixedbread-ai/mxbai-rerank-large-v2 | 1.5B | 0.8661 | 72.9 | 3.2 |
-| BAAI/bge-reranker-v2-m3 | 568M | 0.8586 | 453.5 | 9.3 |
-| tomaarsen/Qwen3-Reranker-0.6B-seq-cls | 596M | 0.8585 | 111.5 | 4.2 |
-| nvidia/llama-nemotron-rerank-1b-v2 | 1.2B | 0.8522 | 142.7 | 3.9 |
-| nlpai-lab/LAMAR-600m | 568M | 0.8406 | 458.8 | 9.2 |
-| dragonkue/bge-reranker-v2-m3-ko | 568M | 0.8263 | 450.6 | 9.2 |
-| BAAI/bge-reranker-v2-gemma | 2.5B | 0.8186 | 65.7 | 2.5 |
-| upskyy/ko-reranker-8k | 568M | 0.8085 | 453.3 | 9.2 |
-| Dongjin-kr/ko-reranker | 560M | 0.7950 | 509.0 | 272.7 |
-| telepix/PIXIE-Spell-Reranker-Preview-0.6B | 596M | 0.7806 | 111.6 | 4.3 |
-| cross-encoder/ettin-reranker-1b-v1 | 1.0B | 0.6901 | 55.5 | 3.8 |
+| Model | Params | Mean NDCG@10 | Mean PPS |
+|---|---|---|---|
+| tomaarsen/Qwen3-Reranker-8B-seq-cls | 7.6B | 0.9004 | 15.1 |
+| tomaarsen/Qwen3-Reranker-4B-seq-cls | 4.0B | 0.8956 | 24.3 |
+| nlpai-lab/KURE-Reranker-base | 1.7B | 0.8828 | 54.1 |
+| nlpai-lab/KURE-Reranker-nano | 149M | 0.8808 | 473.7 |
+| zeroentropy/zerank-2-reranker | 4.0B | 0.8695 | 29.4 |
+| lightonai/LightOn-rerank-PW-4B | 4.5B | 0.8664 | 15.0 |
+| mixedbread-ai/mxbai-rerank-large-v2 | 1.5B | 0.8661 | 65.2 |
+| BAAI/bge-reranker-v2-m3 | 568M | 0.8586 | 404.1 |
+| tomaarsen/Qwen3-Reranker-0.6B-seq-cls | 596M | 0.8585 | 99.6 |
+| nvidia/llama-nemotron-rerank-1b-v2 | 1.2B | 0.8522 | 127.3 |
+| nlpai-lab/LAMAR-600m | 568M | 0.8406 | 408.8 |
+| dragonkue/bge-reranker-v2-m3-ko | 568M | 0.8263 | 401.5 |
+| BAAI/bge-reranker-v2-gemma | 2.5B | 0.8186 | 58.7 |
+| upskyy/ko-reranker-8k | 568M | 0.8085 | 404.0 |
+| Dongjin-kr/ko-reranker | 560M | 0.7950 | 482.8 |
+| telepix/PIXIE-Spell-Reranker-Preview-0.6B | 596M | 0.7806 | 99.6 |
+| cross-encoder/ettin-reranker-1b-v1 | 1.0B | 0.6901 | 49.7 |
 
-**8-task PPS** = 추론 처리량(query–document pairs/s), MLDR 제외 8 subset 평균. RTX A6000 1장, bf16 + flash_attention_2. **MLDR PPS** = 장문 MultiLongDocRetrieval 의 처리량.
+**Mean PPS** = 추론 처리량(query–document pairs/s), 9 subset 평균. RTX A6000 1장, bf16 + flash_attention_2.
 
 > `jinaai/jina-reranker-v3` 와 `jinaai/jina-reranker-v3.5` 는 **listwise** reranker 로, 장문(`MultiLongDocRetrieval`)에서 다른 모델과 동일 조건(8192)으로 공정 비교가 불가능하여 두 모델 모두 MLDR 을 N/A 로 두고 위 9-subset 평가에서 제외합니다. 
 
@@ -111,13 +111,38 @@ uv run streamlit run leaderboard_reranker.py
 | telepix/PIXIE-Spell-Reranker-Preview-0.6B | 596M | 0.8329 | 0.9794 | 0.8534 | 0.9777 | 0.8449 | 0.7650 | 0.1829 | 0.9850 | 0.6042 |
 | cross-encoder/ettin-reranker-1b-v1 | 1.0B | 0.6624 | 0.8901 | 0.7461 | 0.6914 | 0.7004 | 0.6659 | 0.3651 | 0.9590 | 0.5306 |
 
+### Per-dataset PPS
+
+| Model | Params | Ko-StrategyQA | AutoRAGRetrieval | PublicHealthQA | BelebeleRetrieval | MIRACLRetrieval | MrTidyRetrieval | MultiLongDocRetrieval | SQuADKorV1Retrieval | LawIRKo |
+|---|---|---|---|---|---|---|---|---|---|---|
+| tomaarsen/Qwen3-Reranker-8B-seq-cls | 7.6B | 16.6 | 7.3 | 17.5 | 19.4 | 24.9 | 26.5 | 0.7 | 10.6 | 12.3 |
+| tomaarsen/Qwen3-Reranker-4B-seq-cls | 4.0B | 26.1 | 11.8 | 28.4 | 31.5 | 40.0 | 42.4 | 1.1 | 17.2 | 20.0 |
+| nlpai-lab/KURE-Reranker-base | 1.7B | 58.2 | 27.0 | 63.7 | 70.0 | 87.1 | 95.3 | 2.6 | 38.1 | 45.0 |
+| nlpai-lab/KURE-Reranker-nano | 149M | 475.4 | 233.2 | 569.7 | 630.9 | 765.8 | 855.2 | 16.5 | 330.8 | 386.0 |
+| jinaai/jina-reranker-v3.5 | 597M | 141.0 | 38.6 | 148.6 | 174.6 | 277.3 | 295.7 | — | 68.4 | 86.7 |
+| jinaai/jina-reranker-v3 | 597M | 113.8 | 25.0 | 121.8 | 169.2 | 244.6 | 261.6 | — | 48.7 | 64.0 |
+| zeroentropy/zerank-2-reranker | 4.0B | 31.0 | 12.7 | 33.8 | 37.8 | 51.0 | 56.4 | 1.1 | 18.8 | 22.3 |
+| lightonai/LightOn-rerank-PW-4B | 4.5B | 16.2 | 7.3 | 18.6 | 19.5 | 23.4 | 26.1 | 0.7 | 10.7 | 12.4 |
+| mixedbread-ai/mxbai-rerank-large-v2 | 1.5B | 70.0 | 32.9 | 76.8 | 84.1 | 104.2 | 113.6 | 3.2 | 47.0 | 54.7 |
+| BAAI/bge-reranker-v2-m3 | 568M | 420.7 | 195.6 | 471.3 | 545.3 | 653.2 | 724.8 | 9.3 | 271.6 | 345.5 |
+| tomaarsen/Qwen3-Reranker-0.6B-seq-cls | 596M | 107.1 | 49.6 | 118.0 | 129.3 | 159.5 | 173.9 | 4.2 | 71.8 | 82.9 |
+| nvidia/llama-nemotron-rerank-1b-v2 | 1.2B | 133.7 | 54.4 | 146.9 | 163.0 | 220.0 | 243.1 | 3.9 | 84.9 | 95.9 |
+| nlpai-lab/LAMAR-600m | 568M | 418.0 | 196.5 | 480.5 | 557.2 | 656.7 | 742.5 | 9.2 | 275.0 | 343.8 |
+| dragonkue/bge-reranker-v2-m3-ko | 568M | 416.9 | 195.1 | 467.2 | 540.7 | 653.4 | 716.7 | 9.2 | 271.9 | 342.7 |
+| BAAI/bge-reranker-v2-gemma | 2.5B | 64.7 | 26.1 | 67.5 | 75.8 | 99.8 | 106.8 | 2.5 | 40.0 | 44.7 |
+| upskyy/ko-reranker-8k | 568M | 411.8 | 195.6 | 474.3 | 551.4 | 649.3 | 726.0 | 9.2 | 275.1 | 342.8 |
+| Dongjin-kr/ko-reranker | 560M | 520.8 | 258.0 | 510.1 | 554.8 | 747.6 | 765.2 | 272.7 | 334.4 | 381.2 |
+| telepix/PIXIE-Spell-Reranker-Preview-0.6B | 596M | 104.6 | 49.4 | 117.8 | 129.8 | 160.5 | 175.6 | 4.3 | 72.1 | 82.6 |
+| cross-encoder/ettin-reranker-1b-v1 | 1.0B | 52.4 | 19.9 | 51.4 | 65.6 | 92.7 | 97.2 | 3.8 | 31.2 | 33.4 |
+
+
 ## Citation
 
 본 벤치마크를 연구에 활용하셨다면 아래와 같이 인용해 주세요.
 
 ```bibtex
 @misc{reranker-simple-benchmark,
-  title        = {Make Reranker Benchmark Simple Again},
+  title        = {Reranker Simple Benchmark},
   author       = {Sigrid Jin, Youngjoon Jang, Yongbin Choi, Daegon Yu, Kanghyeun Lee, Juna Jung, Junu Moon},
   year         = {2025},
   publisher    = {GitHub},
