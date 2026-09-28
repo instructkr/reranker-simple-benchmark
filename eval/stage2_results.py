@@ -46,7 +46,7 @@ PPS_TASKS = [t for t in TASKS if t != MLDR]
 PPS_NOTE = ("**8-task PPS** = 추론 처리량(query–document pairs/s), MLDR 제외 8 subset 평균. RTX A6000 1장, "
             "bf16 + flash_attention_2, `--speed` 로 측정 (측정 방식은 *Methodology* 참고).")
 
-# 모델 파라미터 수(실측: 캐시된 safetensors 헤더의 tensor shape 합). 표 Params 열·산점도 x축에 사용.
+# 모델 파라미터 수(실측: 캐시된 safetensors 헤더의 tensor shape 합). 표 Params 열·산점도(크기 x축, PPS 그림 라벨·색)에 사용.
 MODEL_SIZES = {
     "tomaarsen/Qwen3-Reranker-8B-seq-cls": 7_567_315_968,
     "tomaarsen/Qwen3-Reranker-4B-seq-cls": 4_021_787_136,
@@ -91,7 +91,7 @@ def _mean_over(data, model, tasks):
     return v1 / n, v5 / n, v10 / n
 
 
-def mean_pps(data, model):
-    """PPS_TASKS 전부에 PPS 가 있으면 평균, 하나라도 결측이면 None."""
-    vals = [(data[model].get(t) or {}).get("pps") for t in PPS_TASKS]
+def mean_pps(data, model, tasks=PPS_TASKS):
+    """tasks(기본 MLDR 제외 8개) 전부에 PPS 가 있으면 평균, 하나라도 결측이면 None."""
+    vals = [(data[model].get(t) or {}).get("pps") for t in tasks]
     return None if any(v is None for v in vals) else sum(vals) / len(vals)

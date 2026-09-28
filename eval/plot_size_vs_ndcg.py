@@ -16,6 +16,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FixedLocator, FixedFormatter
 
+from plot_pps_vs_ndcg import TIMES
 from stage2_results import collect, MODEL_SIZES, _mean_over, TASKS
 
 V2_ROOT = Path(__file__).resolve().parents[1]
@@ -62,6 +63,7 @@ def main():
             pts.append((MODEL_SIZES[model] / 1e9, r[2], short(model)))
     pts.sort()
 
+    plt.rcParams.update({"font.family": "serif", "font.serif": TIMES, "mathtext.fontset": "stix"})
     fig, ax = plt.subplots(figsize=(11, 6.8), dpi=150)
     xs = [p[0] for p in pts]
     ys = [p[1] for p in pts]
