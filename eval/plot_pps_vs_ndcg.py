@@ -50,8 +50,8 @@ SHORT = {
     "Dongjin-kr/ko-reranker": "ko-reranker",
     "telepix/PIXIE-Spell-Reranker-Preview-0.6B": "PIXIE-0.6B",
     "cross-encoder/ettin-reranker-1b-v1": "ettin-1b",
-    "nlpai-lab/KURE-Reranker-nano": "KURE-nano",
-    "nlpai-lab/KURE-Reranker-base": "KURE-base",
+    "nlpai-lab/KURE-Reranker-nano": "KURE-Reranker-nano",
+    "nlpai-lab/KURE-Reranker-base": "KURE-Reranker-base",
 }
 
 # 점이 겹치는 모델의 라벨 오프셋(points). 없으면 점 오른쪽. dx<0 이면 점 왼쪽에 우측 정렬.
@@ -115,13 +115,15 @@ def main():
     ax.xaxis.set_major_locator(FixedLocator(ticks))
     ax.xaxis.set_major_formatter(FixedFormatter([f"{t:g}" for t in ticks]))
     ax.xaxis.set_minor_formatter(NullFormatter())
-    ax.set_xlim(min(xs) * 0.8, max(xs) * 1.9)
+    ax.set_xlim(min(xs) * 0.8, max(xs) * 2.3)
     ax.set_ylim(min(ys) - 0.02, max(ys) + 0.02)
 
     ax.set_xlabel("Mean PPS (pairs/s)", fontsize=12, color=INK)
     ax.set_ylabel("Mean nDCG@10", fontsize=12, color=INK)
-    ax.legend(title="Model size", loc="lower right", frameon=False, fontsize=10,
-              title_fontsize=10, labelcolor=INK)
+    # 범례 오른쪽 끝을 x=920 에 둠 — 1000 눈금에서 살짝 띄움 (x 는 data, y 는 axes 좌표).
+    ax.legend(title="Model size", loc="lower right", bbox_to_anchor=(920, 0.02),
+              bbox_transform=ax.get_xaxis_transform(), borderaxespad=0, borderpad=0,
+              frameon=False, fontsize=10, title_fontsize=10, labelcolor=INK)
 
     ax.grid(True, which="major", color="#e6e9ef", linewidth=0.8, zorder=0)
     for s in ("top", "right"):

@@ -67,7 +67,7 @@ uv run streamlit run leaderboard_reranker.py
 |---|---|---|---|
 | tomaarsen/Qwen3-Reranker-8B-seq-cls | 7.6B | 0.9004 | 15.1 |
 | tomaarsen/Qwen3-Reranker-4B-seq-cls | 4.0B | 0.8956 | 24.3 |
-| nlpai-lab/KURE-Reranker-base | 1.7B | 0.8828 | 54.1 |
+| nlpai-lab/KURE-Reranker-base | 1.7B | 0.8849 | 55.1 |
 | nlpai-lab/KURE-Reranker-nano | 149M | 0.8808 | 473.7 |
 | zeroentropy/zerank-2-reranker | 4.0B | 0.8695 | 29.4 |
 | lightonai/LightOn-rerank-PW-4B | 4.5B | 0.8664 | 15.0 |
@@ -93,7 +93,7 @@ uv run streamlit run leaderboard_reranker.py
 |---|---|---|---|---|---|---|---|---|---|---|
 | tomaarsen/Qwen3-Reranker-8B-seq-cls | 7.6B | 0.8679 | 0.9546 | 0.8893 | 0.9907 | 0.8490 | 0.8409 | 0.8220 | 0.9880 | 0.9014 |
 | tomaarsen/Qwen3-Reranker-4B-seq-cls | 4.0B | 0.8733 | 0.9707 | 0.8685 | 0.9906 | 0.8533 | 0.8321 | 0.8105 | 0.9861 | 0.8752 |
-| nlpai-lab/KURE-Reranker-base | 1.7B | 0.8525 | 0.9762 | 0.8722 | 0.9881 | 0.8323 | 0.7978 | 0.8031 | 0.9883 | 0.8350 |
+| nlpai-lab/KURE-Reranker-base | 1.7B | 0.8548 | 0.9762 | 0.8716 | 0.9880 | 0.8371 | 0.7970 | 0.8163 | 0.9891 | 0.8343 |
 | nlpai-lab/KURE-Reranker-nano | 149M | 0.8582 | 0.9741 | 0.8475 | 0.9830 | 0.8400 | 0.8011 | 0.7966 | 0.9895 | 0.8368 |
 | jinaai/jina-reranker-v3.5 | 597M | 0.8539 | 0.9838 | 0.8094 | 0.9733 | 0.8565 | 0.8194 | — | 0.9887 | 0.8545 |
 | jinaai/jina-reranker-v3 | 597M | 0.8553 | 0.9773 | 0.7960 | 0.9695 | 0.8449 | 0.8104 | — | 0.9859 | 0.8546 |
@@ -117,7 +117,7 @@ uv run streamlit run leaderboard_reranker.py
 |---|---|---|---|---|---|---|---|---|---|---|
 | tomaarsen/Qwen3-Reranker-8B-seq-cls | 7.6B | 16.6 | 7.3 | 17.5 | 19.4 | 24.9 | 26.5 | 0.7 | 10.6 | 12.3 |
 | tomaarsen/Qwen3-Reranker-4B-seq-cls | 4.0B | 26.1 | 11.8 | 28.4 | 31.5 | 40.0 | 42.4 | 1.1 | 17.2 | 20.0 |
-| nlpai-lab/KURE-Reranker-base | 1.7B | 58.2 | 27.0 | 63.7 | 70.0 | 87.1 | 95.3 | 2.6 | 38.1 | 45.0 |
+| nlpai-lab/KURE-Reranker-base | 1.7B | 59.2 | 27.3 | 64.6 | 71.1 | 89.1 | 97.1 | 2.6 | 39.1 | 45.7 |
 | nlpai-lab/KURE-Reranker-nano | 149M | 475.4 | 233.2 | 569.7 | 630.9 | 765.8 | 855.2 | 16.5 | 330.8 | 386.0 |
 | jinaai/jina-reranker-v3.5 | 597M | 141.0 | 38.6 | 148.6 | 174.6 | 277.3 | 295.7 | — | 68.4 | 86.7 |
 | jinaai/jina-reranker-v3 | 597M | 113.8 | 25.0 | 121.8 | 169.2 | 244.6 | 261.6 | — | 48.7 | 64.0 |
