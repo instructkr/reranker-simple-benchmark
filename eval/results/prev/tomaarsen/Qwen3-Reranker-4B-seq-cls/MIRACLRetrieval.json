@@ -1,0 +1,31 @@
+{
+  "ndcg_at_1": 0.76056,
+  "ndcg_at_5": 0.81072,
+  "ndcg_at_10": 0.85331,
+  "map_at_10": 0.77684,
+  "mrr_at_10": 0.8575508607198747,
+  "recall_at_10": 0.96655,
+  "main_score": 0.85331,
+  "_model": "tomaarsen/Qwen3-Reranker-4B-seq-cls",
+  "_task": "MIRACLRetrieval",
+  "_split": "dev",
+  "_max_length": 8192,
+  "_neg_top_k": 50,
+  "pps": 39.976705998929646,
+  "pps_batch_size": 16,
+  "pps_sweep": {
+    "8": 38.336863279613084,
+    "16": 39.976705998929646,
+    "32": 38.84934576118303,
+    "64": 34.77978048906214,
+    "128": 28.8612649754245,
+    "256": null
+  },
+  "_pps_n_pairs": 568,
+  "_pps_n_queries": 10,
+  "_pps_passes": 3,
+  "_pps_dtype": "bfloat16",
+  "_pps_attn": "flash_attention_2",
+  "_pps_gpu": "NVIDIA RTX A6000",
+  "_pps_gpu_shared": false
+}

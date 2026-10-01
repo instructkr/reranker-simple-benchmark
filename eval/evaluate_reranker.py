@@ -9,12 +9,17 @@ MTEB(2.x) 기반 Reranker 평가 — "옳은 평가"(정답 항상 후보 포함
     → `AbsTaskRetrieval._evaluate_subset` 에서 `data_split["top_ranked"]` 를 주입(monkey-patch).
   - 1차 pool = 기존 stage1 BM25 결과(`eval/results/stage1/top_1k_qrels/<task>_id.jsonl`).
 
-모델: 표준 sentence-transformers CrossEncoder 는 mteb 가 자동 래핑. 비-ST(Qwen 프롬프트/Jina/
-Nemotron/mxbai/bge-gemma)는 `MtebRerankAdapter` 로 mteb CrossEncoderProtocol 에 맞춘다.
+모델: 표준 sentence-transformers CrossEncoder 는 mteb 가 자동 래핑(mxbai·bge-gemma 도 ST causal reranker
+로 로드). 비-ST(Qwen 프롬프트/Jina/Nemotron)는 `MtebRerankAdapter` 로 mteb CrossEncoderProtocol 에 맞춘다.
+
+--speed: 같은 로드로 NDCG 와 추론 처리량(pairs/s)을 한 번에 잰다 — 모델을 bf16 + flash_attention_2
+(미지원 시 sdpa)로 전환하고, NDCG 가 채점한 쌍에서 샘플한 쌍으로 task 마다 처리량을 재어 같은 json 에
+`pps*` / `_pps_*` 로 기록한다. 측정 방식은 `eval/speed.py`.
 
 사용:
   uv run python eval/evaluate_reranker.py --model_names BAAI/bge-reranker-v2-m3 --tasks AutoRAGRetrieval
   uv run python eval/evaluate_reranker.py            # 전체 모델 × 전체 task
+  uv run python eval/evaluate_reranker.py --model_names BAAI/bge-reranker-v2-m3 --speed   # NDCG + PPS
 """
 import argparse
 import json
@@ -72,6 +77,8 @@ DEFAULT_MODEL_NAMES = [
     "cross-encoder/ettin-reranker-1b-v1",
     "zeroentropy/zerank-2-reranker",
     "lightonai/LightOn-rerank-PW-4B",
+    "nlpai-lab/KURE-Reranker-nano",
+    "nlpai-lab/KURE-Reranker-base",
 ]
 
 # 대부분 task 는 languages=["kor-Hang"] 로 한국어 subset 선택. 일부(모노링구얼 list eval_langs)는
@@ -196,17 +203,17 @@ def load_model(model_name: str, device: str, batch_size: int = 16):
     from wrappers import (
         Qwen3RerankerWrapper,
         QwenSeqClsWrapper,
-        MxbaiRerankerWrapper,
-        BGEGemmaRerankerWrapper,
         JinaRerankerV3Wrapper,
         NemotronRerankerWrapper,
+        build_bge_gemma_cross_encoder,
     )
 
     name = model_name.lower()
     bf16 = {"dtype": torch.bfloat16}
 
-    # Qwen3-Reranker seq-cls → native seq-cls wrapper (ST5.7 chat_template 회피, 4B/8B 대응)
-    if "qwen3-reranker" in name:
+    # Qwen3-Reranker seq-cls → native seq-cls wrapper (ST5.7 chat_template 회피, 4B/8B 대응).
+    # 공식 Qwen/Qwen3-Reranker-* 는 yes/no LogitScore ST CrossEncoder 라 아래 표준 경로로 간다.
+    if "qwen3-reranker" in name and "seq-cls" in name:
         w = QwenSeqClsWrapper(model_name, device=device, torch_dtype=torch.bfloat16, max_length=MAX_LENGTH)
         return adapt(w)
     # PIXIE (Qwen 프롬프트, ST CrossEncoder 로 정상 동작)
@@ -214,22 +221,38 @@ def load_model(model_name: str, device: str, batch_size: int = 16):
         w = Qwen3RerankerWrapper(model_name, trust_remote_code=True, model_kwargs=bf16, device=device)
         w.model.max_length = min(MAX_LENGTH, getattr(w.model, "max_length", MAX_LENGTH))  # cap
         return adapt(w)
+    # mxbai·bge-gemma: yes/no 로짓 reranker 를 ST CrossEncoder 로 — ST 가 마지막 위치 로짓만 계산
+    # (logits_to_keep=1). 라이브러리 경로(mxbai_rerank, FlagLLMReranker)는 [batch, seq, vocab] 전체를 만든다.
     if "mxbai" in name:
-        w = MxbaiRerankerWrapper(model_name, device=device, torch_dtype=torch.bfloat16)
-        try:
-            w.model.max_length = min(MAX_LENGTH, getattr(w.model, "max_length", MAX_LENGTH))  # cap
-        except Exception:
-            pass
-        return adapt(w)
+        # repo 의 공식 ST 설정 = mxbai_rerank 와 같은 프롬프트·"1"/"0" 토큰 (점수 Pearson 0.9994, top-1 동일).
+        # 활성화 미지정 시 ST 기본값 Sigmoid → raw 마진을 쓰는 라이브러리와 맞춰 Identity. 라이브러리는
+        # 문서(전체 입력 X)를 max_length 로 자르므로 상한 = max_length + 템플릿.
+        ce = CrossEncoder(model_name, model_kwargs=bf16, device=device, activation_fn=torch.nn.Identity())
+        empty = [{"role": "query", "content": ""}, {"role": "document", "content": ""}]
+        template = ce.tokenizer.apply_chat_template(empty, tokenize=False)
+        ce.max_length = MAX_LENGTH + len(ce.tokenizer(template, add_special_tokens=False)["input_ids"])
+        ce.eval_max_length = MAX_LENGTH
+        return ce
     if "bge-reranker-v2-gemma" in name:
-        w = BGEGemmaRerankerWrapper(model_name, use_bf16=True, devices=[device], max_length=MAX_LENGTH)
-        return adapt(w)
+        ce = build_bge_gemma_cross_encoder(model_name, device, max_length=MAX_LENGTH)
+        ce.eval_max_length = MAX_LENGTH
+        return ce
     if "jina-reranker-v3" in name:  # v3, v3.5
         w = JinaRerankerV3Wrapper(model_name, device=device, torch_dtype=torch.bfloat16, max_doc_tokens=MAX_LENGTH)
         return adapt(w)
     if "nemotron-rerank" in name:
         w = NemotronRerankerWrapper(model_name, device=device, torch_dtype=torch.bfloat16, max_length=MAX_LENGTH)
         return adapt(w)
+
+    # KaLM-Reranker (T5Gemma2 enc-dec): 문서 → encoder, instruction+query(≤512) → decoder. 설정의 문서 상한
+    # 1024 는 기본값일 뿐 아키텍처 한도가 아니므로, 다른 모델과 같이 문서를 8192 까지 받는다.
+    # repo 기본 활성화 Sigmoid 는 bf16 에서 1 근처가 포화돼 동점을 만들므로 raw yes−no 마진(Identity)을 쓴다.
+    if "kalm-reranker" in name:
+        ce = CrossEncoder(model_name, trust_remote_code=True, model_kwargs=bf16, device=device,
+                          activation_fn=torch.nn.Identity())
+        ce.max_length = MAX_LENGTH
+        ce.eval_max_length = MAX_LENGTH
+        return ce
 
     # 표준 ST CrossEncoder (bge, ettin, zerank-2, LightOn, LAMAR, gte, jina-v2, ko-reranker 계열 …)
     ce = CrossEncoder(model_name, trust_remote_code=True, model_kwargs=bf16, device=device)
@@ -242,6 +265,11 @@ def load_model(model_name: str, device: str, batch_size: int = 16):
     tok = getattr(ce, "tokenizer", None)
     if tok is not None and getattr(tok, "pad_token", None) is None and getattr(tok, "eos_token", None) is not None:
         tok.pad_token = tok.eos_token  # causal-LM 기반(zerank-2 등) batch>1 대응
+    # 스코어링은 forward 1회라 KV 캐시가 쓸모없는데, use_cache=True 인 causal LM(공식 Qwen3-Reranker 등)은
+    # 캐시를 다 쌓아 bs16×8192(MLDR)에서 ~19GB 를 더 잡고 OOM 난다. 점수에는 영향 없음.
+    hf_cfg = getattr(getattr(ce, "model", None), "config", None)
+    if getattr(hf_cfg, "use_cache", False):
+        hf_cfg.use_cache = False
     return ce
 
 
@@ -293,9 +321,16 @@ def extract_scores(res) -> dict:
 # ============================================================================
 # 드라이버
 # ============================================================================
-def eval_one_model(model_name: str, tasks: list[str], device: str, overwrite: bool, batch_size: int):
+def eval_one_model(model_name: str, tasks: list[str], device: str, overwrite: bool, batch_size: int,
+                   out_dir: Path = OUT_DIR, speed: bool = False, speed_samples: int = 512):
     model = load_model(model_name, device, batch_size)
-    out_model_dir = OUT_DIR / model_name
+    tap = attn = None
+    if speed:  # 한 번의 로드로 NDCG 와 PPS 모두 bf16 + FA2 (미지원 시 sdpa)
+        from speed import PairTap, set_attention, speed_target
+        attn = set_attention(speed_target(model)[2])
+        tap = PairTap(model)
+        print(f"[speed] attn={attn}", flush=True)
+    out_model_dir = out_dir / model_name
     out_model_dir.mkdir(parents=True, exist_ok=True)
     for task_name in tasks:
         out_path = out_model_dir / f"{task_name}.json"
@@ -308,7 +343,12 @@ def eval_one_model(model_name: str, tasks: list[str], device: str, overwrite: bo
                 print(f"[error] task 없음: {task_name}", flush=True)
                 continue
             print(f"\n=== {model_name} × {task_name} ===", flush=True)
+            if tap:
+                tap.take()
+                tap.on = True  # NDCG 가 채점하는 쌍을 기록 → 같은 쌍으로 PPS 측정
             res = mteb.evaluate(model, t, cache=None, overwrite_strategy="always", show_progress_bar=False, encode_kwargs={"batch_size": batch_size})
+            if tap:
+                tap.on = False
             raw = extract_scores(res)
             # simple 포맷(리더보드/README 공용): __per_subset 제외 + main_score·_split 추가.
             scores = {k: v for k, v in raw.items() if not k.endswith("__per_subset")}
@@ -318,8 +358,12 @@ def eval_one_model(model_name: str, tasks: list[str], device: str, overwrite: bo
             scores["_split"] = "+".join(t.metadata.eval_splits)   # 예: MLDR = "dev+test" (공식 MTEB kor v2)
             scores["_max_length"] = getattr(model, "eval_max_length", MAX_LENGTH)  # 재현성: 실제 적용된 max_length(=min(8192,네이티브))
             scores["_neg_top_k"] = NEG_TOP_K        # 재현성: gold 외 BM25 negative 후보 수
+            if tap:
+                from speed import speed_record
+                scores.update(speed_record(model, tap, attn, device, speed_samples))
             json.dump(scores, open(out_path, "w"), indent=2)
-            print(f"[done] {task_name}: NDCG@10={scores.get('ndcg_at_10')}", flush=True)
+            pps = f" PPS={scores['pps']:.1f} (bs {scores['pps_batch_size']})" if scores.get("pps") else ""
+            print(f"[done] {task_name}: NDCG@10={scores.get('ndcg_at_10')}{pps}", flush=True)
         except Exception as ex:
             print(f"[error] {model_name} / {task_name}: {ex}", flush=True)
             traceback.print_exc()
@@ -332,13 +376,20 @@ def main():
     ap.add_argument("--gpu_id", type=int, default=0)
     ap.add_argument("--overwrite", action="store_true")
     ap.add_argument("--batch_size", type=int, default=16)
+    ap.add_argument("--out_dir", type=Path, default=OUT_DIR)
+    ap.add_argument("--speed", action="store_true",
+                    help="NDCG 와 함께 추론 처리량(pairs/s)도 측정 — bf16 + flash_attention_2, GPU 필요. "
+                         "다른 프로세스가 없는 GPU 에서 실행할 것 (공유 시 _pps_gpu_shared=true 로 기록).")
+    ap.add_argument("--speed_samples", type=int, default=512,
+                    help="task 당 PPS 측정 쌍 수 (채점 쌍에서 query 단위 샘플, seed 0)")
     args = ap.parse_args()
 
     device = f"cuda:{args.gpu_id}" if torch.cuda.is_available() else "cpu"
     print(f"device={device} | models={len(args.model_names)} tasks={len(args.tasks)}", flush=True)
     for model_name in args.model_names:
         try:
-            eval_one_model(model_name, args.tasks, device, args.overwrite, args.batch_size)
+            eval_one_model(model_name, args.tasks, device, args.overwrite, args.batch_size,
+                           args.out_dir, args.speed, args.speed_samples)
         except Exception as ex:
             print(f"[error] model {model_name}: {ex}", flush=True)
             traceback.print_exc()

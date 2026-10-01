@@ -16,7 +16,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FixedLocator, FixedFormatter
 
-from build_readme_mteb2x import collect, MODEL_SIZES, _mean_over, TASKS
+from plot_pps_vs_ndcg import TIMES
+from stage2_results import collect, MODEL_SIZES, _mean_over, TASKS
 
 V2_ROOT = Path(__file__).resolve().parents[1]
 OUT = V2_ROOT / "assets" / "model_size_vs_ndcg9.png"
@@ -44,6 +45,8 @@ SHORT = {
     "Dongjin-kr/ko-reranker": "ko-reranker",
     "telepix/PIXIE-Spell-Reranker-Preview-0.6B": "PIXIE-0.6B",
     "cross-encoder/ettin-reranker-1b-v1": "ettin-1b",
+    "nlpai-lab/KURE-Reranker-nano": "KURE-nano",
+    "nlpai-lab/KURE-Reranker-base": "KURE-base",
 }
 
 
@@ -60,18 +63,20 @@ def main():
             pts.append((MODEL_SIZES[model] / 1e9, r[2], short(model)))
     pts.sort()
 
+    plt.rcParams.update({"font.family": "serif", "font.serif": TIMES, "mathtext.fontset": "stix"})
     fig, ax = plt.subplots(figsize=(11, 6.8), dpi=150)
     xs = [p[0] for p in pts]
     ys = [p[1] for p in pts]
     ax.scatter(xs, ys, s=110, color=DOT, edgecolor="white", linewidth=1.6, zorder=3)
 
-    # 우측(≈1B+): 점 오른쪽에 직접 라벨. 좌측 밀집(≈0.6B): 오른쪽 빈 공간에 사다리 배치+연결선.
+    # 밀집 구간(≈0.6B) 밖: 점 오른쪽에 직접 라벨. 밀집 구간: 오른쪽 빈 공간에 사다리 배치+연결선.
+    crowded = lambda x: 0.4 <= x <= 0.65  # noqa: E731
     for x, y, name in pts:
-        if x > 0.65:
+        if not crowded(x):
             ax.annotate(name, (x, y), textcoords="offset points", xytext=(10, 0),
                         ha="left", va="center", fontsize=8.4, color=INK)
 
-    left = sorted([p for p in pts if p[0] <= 0.65], key=lambda p: -p[1])  # y 내림차순
+    left = sorted([p for p in pts if crowded(p[0])], key=lambda p: -p[1])  # y 내림차순
     n = len(left)
     ytop = max(p[1] for p in left) + 0.016
     ybot = min(p[1] for p in left) - 0.016
@@ -83,17 +88,14 @@ def main():
                                     shrinkA=1, shrinkB=5))
 
     ax.set_xscale("log")
-    ticks = [0.5, 1, 2, 4, 8]
+    ticks = [0.125, 0.25, 0.5, 1, 2, 4, 8]
     ax.xaxis.set_major_locator(FixedLocator(ticks))
-    ax.xaxis.set_major_formatter(FixedFormatter([f"{t:g}B" for t in ticks]))
-    ax.set_xlim(0.45, 11)
+    ax.xaxis.set_major_formatter(FixedFormatter([f"{t:g}B" if t >= 1 else f"{t * 1000:g}M" for t in ticks]))
+    ax.set_xlim(min(0.45, min(xs) * 0.8), 11)
     ax.set_ylim(min(ys) - 0.02, max(ys) + 0.02)
 
-    ax.set_xlabel("Model size (parameters, log scale)", fontsize=11, color=INK)
-    ax.set_ylabel("Mean NDCG@10  (official MTEB(kor, v2), 9 subsets)", fontsize=11, color=INK)
-    ax.set_title("Reranker model size vs. accuracy  —  gold-injected reranking, max_length 8192\n"
-                 "(jina-reranker-v3/v3.5 excluded: listwise long-doc token-length OOD)",
-                 fontsize=11.5, color=INK, pad=12)
+    ax.set_xlabel("Model size (parameters)", fontsize=11, color=INK)
+    ax.set_ylabel("Mean nDCG@10", fontsize=11, color=INK)
 
     ax.grid(True, which="major", color="#e6e9ef", linewidth=0.8, zorder=0)
     for s in ("top", "right"):
