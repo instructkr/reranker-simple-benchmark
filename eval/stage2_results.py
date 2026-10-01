@@ -67,6 +67,10 @@ MODEL_SIZES = {
     "cross-encoder/ettin-reranker-1b-v1": 1_028_050_688,
     "nlpai-lab/KURE-Reranker-nano": 149_323_009,
     "nlpai-lab/KURE-Reranker-base": 1_720_574_976,
+    "Qwen/Qwen3-Reranker-8B": 8_188_548_096,
+    "Qwen/Qwen3-Reranker-4B": 4_021_784_576,
+    "Qwen/Qwen3-Reranker-0.6B": 595_776_512,
+    "KaLM-Embedding/KaLM-Reranker-V1-Large-R2": 7_508_928_880,
 }
 
 

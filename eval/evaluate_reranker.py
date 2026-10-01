@@ -211,8 +211,9 @@ def load_model(model_name: str, device: str, batch_size: int = 16):
     name = model_name.lower()
     bf16 = {"dtype": torch.bfloat16}
 
-    # Qwen3-Reranker seq-cls → native seq-cls wrapper (ST5.7 chat_template 회피, 4B/8B 대응)
-    if "qwen3-reranker" in name:
+    # Qwen3-Reranker seq-cls → native seq-cls wrapper (ST5.7 chat_template 회피, 4B/8B 대응).
+    # 공식 Qwen/Qwen3-Reranker-* 는 yes/no LogitScore ST CrossEncoder 라 아래 표준 경로로 간다.
+    if "qwen3-reranker" in name and "seq-cls" in name:
         w = QwenSeqClsWrapper(model_name, device=device, torch_dtype=torch.bfloat16, max_length=MAX_LENGTH)
         return adapt(w)
     # PIXIE (Qwen 프롬프트, ST CrossEncoder 로 정상 동작)
@@ -243,6 +244,16 @@ def load_model(model_name: str, device: str, batch_size: int = 16):
         w = NemotronRerankerWrapper(model_name, device=device, torch_dtype=torch.bfloat16, max_length=MAX_LENGTH)
         return adapt(w)
 
+    # KaLM-Reranker (T5Gemma2 enc-dec): 문서 → encoder, instruction+query(≤512) → decoder. 설정의 문서 상한
+    # 1024 는 기본값일 뿐 아키텍처 한도가 아니므로, 다른 모델과 같이 문서를 8192 까지 받는다.
+    # repo 기본 활성화 Sigmoid 는 bf16 에서 1 근처가 포화돼 동점을 만들므로 raw yes−no 마진(Identity)을 쓴다.
+    if "kalm-reranker" in name:
+        ce = CrossEncoder(model_name, trust_remote_code=True, model_kwargs=bf16, device=device,
+                          activation_fn=torch.nn.Identity())
+        ce.max_length = MAX_LENGTH
+        ce.eval_max_length = MAX_LENGTH
+        return ce
+
     # 표준 ST CrossEncoder (bge, ettin, zerank-2, LightOn, LAMAR, gte, jina-v2, ko-reranker 계열 …)
     ce = CrossEncoder(model_name, trust_remote_code=True, model_kwargs=bf16, device=device)
     # ★ max_length = min(8192, 모델 네이티브 최대) 로 상한(cap). 8192 초과 모델(40960/262144 등)은 8192 로
@@ -254,6 +265,11 @@ def load_model(model_name: str, device: str, batch_size: int = 16):
     tok = getattr(ce, "tokenizer", None)
     if tok is not None and getattr(tok, "pad_token", None) is None and getattr(tok, "eos_token", None) is not None:
         tok.pad_token = tok.eos_token  # causal-LM 기반(zerank-2 등) batch>1 대응
+    # 스코어링은 forward 1회라 KV 캐시가 쓸모없는데, use_cache=True 인 causal LM(공식 Qwen3-Reranker 등)은
+    # 캐시를 다 쌓아 bs16×8192(MLDR)에서 ~19GB 를 더 잡고 OOM 난다. 점수에는 영향 없음.
+    hf_cfg = getattr(getattr(ce, "model", None), "config", None)
+    if getattr(hf_cfg, "use_cache", False):
+        hf_cfg.use_cache = False
     return ce
 
 
