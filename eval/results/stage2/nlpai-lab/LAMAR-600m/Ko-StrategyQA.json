@@ -10,5 +10,25 @@
   "_task": "Ko-StrategyQA",
   "_split": "dev",
   "_max_length": 8192,
-  "_neg_top_k": 50
+  "_neg_top_k": 50,
+  "pps": 418.03739952030844,
+  "pps_batch_size": 32,
+  "pps_sweep": {
+    "8": 258.5051603063111,
+    "16": 353.38904599694416,
+    "32": 418.03739952030844,
+    "64": 399.7594091425162,
+    "128": 325.0871161670054,
+    "256": 249.69102347018438,
+    "512": 192.38003761145478,
+    "1024": 113.82130882955599,
+    "2048": null
+  },
+  "_pps_n_pairs": 550,
+  "_pps_n_queries": 11,
+  "_pps_passes": 3,
+  "_pps_dtype": "bfloat16",
+  "_pps_attn": "flash_attention_2",
+  "_pps_gpu": "NVIDIA RTX A6000",
+  "_pps_gpu_shared": false
 }

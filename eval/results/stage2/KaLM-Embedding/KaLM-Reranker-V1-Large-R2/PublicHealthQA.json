@@ -1,0 +1,32 @@
+{
+  "ndcg_at_1": 0.75325,
+  "ndcg_at_5": 0.85544,
+  "ndcg_at_10": 0.86326,
+  "map_at_10": 0.82778,
+  "mrr_at_10": 0.827958152958153,
+  "recall_at_10": 0.97403,
+  "main_score": 0.86326,
+  "_model": "KaLM-Embedding/KaLM-Reranker-V1-Large-R2",
+  "_task": "PublicHealthQA",
+  "_split": "test",
+  "_max_length": 8192,
+  "_neg_top_k": 50,
+  "pps": 25.350561263883787,
+  "pps_batch_size": 16,
+  "pps_sweep": {
+    "8": 24.34001773517733,
+    "16": 25.350561263883787,
+    "32": 25.239411062186534,
+    "64": 24.745895177344483,
+    "128": 22.843104197981283,
+    "256": 20.266624375811627,
+    "512": null
+  },
+  "_pps_n_pairs": 550,
+  "_pps_n_queries": 11,
+  "_pps_passes": 3,
+  "_pps_dtype": "bfloat16",
+  "_pps_attn": "sdpa",
+  "_pps_gpu": "NVIDIA RTX A6000",
+  "_pps_gpu_shared": false
+}

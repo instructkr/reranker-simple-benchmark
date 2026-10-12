@@ -561,7 +561,8 @@ def load_mteb_kor_task(task_name: str):
     task 의 모든 (kor subset, split) 을 병합한다(예: MultiLongDocRetrieval = dev+test).
     공식 MTEB(kor, v2) split 기준을 따른다(각 task 표준 eval_splits)."""
     task = None
-    for kw in (dict(tasks=[task_name], languages=["kor-Hang"]), dict(tasks=[task_name])):
+    # 평가(evaluate_reranker.get_task)와 같은 subset: 모든 언어가 한국어인 subset 만 (Belebele = kor_Hang-kor_Hang)
+    for kw in (dict(tasks=[task_name], languages=["kor-Hang"], exclusive_language_filter=True), dict(tasks=[task_name])):
         try:
             ts = mteb.get_tasks(**kw)
             if ts:
@@ -585,12 +586,12 @@ def load_mteb_kor_task(task_name: str):
             else:
                 for row in c:
                     corpus[str(row["id"])] = _doc_text_from(row)
-            if hasattr(q, "keys"):
-                for k, v in q.items():
-                    queries[str(k)] = v if isinstance(v, str) else v.get("text", "")
-            else:
-                for row in q:
-                    queries[str(row["id"])] = row.get("text", "")
+            rows = q.items() if hasattr(q, "keys") else ((row["id"], row) for row in q)
+            for k, v in rows:
+                text = v if isinstance(v, str) else v.get("text", "")
+                if queries.get(str(k), text) != text:  # subset 병합 시 같은 ID 가 다른 질문이면 pool 이 오염된다
+                    raise ValueError(f"{task_name}: query id {k} 가 subset 간 서로 다른 질문을 가리킴 ({sub}/{sp})")
+                queries[str(k)] = text
             for qid, docs in r.items():
                 qrels[str(qid)] = [str(d) for d in docs]
             logger.info(f"  [{sub}/{sp}] q={len(q)} corpus={len(c)}")
@@ -689,6 +690,7 @@ Examples:
     if args.kor_tasks:
         output_folder = args.output_dir or "eval/results/stage1/top_1k_qrels"
         logger.info(f"[kor_tasks] mteb 2.x BM25 마이닝: {args.kor_tasks} (tokenizer={args.tokenizer}) → {output_folder}")
+        failed = []
         for task_name in args.kor_tasks:
             try:
                 retrieve_kor_task(
@@ -701,6 +703,9 @@ Examples:
                 logger.error(f"Failed to mine {task_name}: {e}")
                 import traceback
                 traceback.print_exc()
+                failed.append(task_name)
+        if failed:
+            raise SystemExit(f"Failed kor_tasks: {failed}")
         logger.info("All kor_tasks processed.")
         return
 
@@ -729,6 +734,7 @@ Examples:
     logger.info(f"{'='*80}\n")
 
     # Process each dataset
+    failed = []
     for dataset_name in datasets_to_process:
         try:
             if dataset_name in CUSTOM_DATASETS:
@@ -753,8 +759,11 @@ Examples:
             logger.error(f"Failed to process {dataset_name}: {e}")
             import traceback
             traceback.print_exc()
+            failed.append(dataset_name)
             continue
 
+    if failed:  # mteb 2.x 에서는 MTEB 데이터셋의 mteb 1.x 경로가 실패한다 → --kor_tasks 사용
+        raise SystemExit(f"Failed datasets: {failed} (MTEB 데이터셋은 mteb 2.x 에서 --kor_tasks 로 생성)")
     logger.info(f"{'='*80}")
     logger.info("All datasets processed successfully!")
     logger.info(f"{'='*80}")
