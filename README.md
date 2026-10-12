@@ -60,7 +60,7 @@ uv run streamlit run leaderboard_reranker.py
 
 ![Reranker throughput (mean PPS) vs. NDCG@10 (official kMTEB 9 subsets)](assets/pps_vs_ndcg9.png)
 
-### Results (Averaged)
+### Results (9 task averaged)
 <!-- **공식 9개 subset 을 모두 평가한 모델**의 9-subset mean NDCG@10, PPS -->
 | Model | Params | Mean NDCG@10 | Mean PPS |
 |---|---|---|---|
@@ -86,7 +86,8 @@ uv run streamlit run leaderboard_reranker.py
 
 > `jinaai/jina-reranker-v3` 와 `jinaai/jina-reranker-v3.5` 는 **listwise** reranker 로, 장문(`MultiLongDocRetrieval`)에서 다른 모델과 동일 조건(8192)으로 공정 비교가 불가능하여 두 모델 모두 MLDR 을 N/A 로 두고 위 9-subset 평가에서 제외합니다. 
 
-### Per-dataset NDCG@10
+<details>
+<summary><h3>Per-dataset NDCG@10</h3></summary>
 
 | Model | Params | Ko-StrategyQA | AutoRAGRetrieval | PublicHealthQA | BelebeleRetrieval | MIRACLRetrieval | MrTidyRetrieval | MultiLongDocRetrieval | SQuADKorV1Retrieval | LawIRKo |
 |---|---|---|---|---|---|---|---|---|---|---|
@@ -110,7 +111,10 @@ uv run streamlit run leaderboard_reranker.py
 | Dongjin-kr/ko-reranker | 560M | 0.8468 | 0.9014 | 0.6976 | 0.9655 | 0.8017 | 0.7772 | 0.3721 | 0.9785 | 0.7343 |
 | telepix/PIXIE-Spell-Reranker-Preview-0.6B | 596M | 0.8329 | 0.9794 | 0.8211 | 0.9689 | 0.8449 | 0.7650 | 0.1829 | 0.9850 | 0.6042 |
 
-### Per-dataset PPS
+</details>
+
+<details>
+<summary><h3>Per-dataset PPS</h3></summary>
 
 | Model | Params | Ko-StrategyQA | AutoRAGRetrieval | PublicHealthQA | BelebeleRetrieval | MIRACLRetrieval | MrTidyRetrieval | MultiLongDocRetrieval | SQuADKorV1Retrieval | LawIRKo |
 |---|---|---|---|---|---|---|---|---|---|---|
@@ -133,6 +137,8 @@ uv run streamlit run leaderboard_reranker.py
 | upskyy/ko-reranker-8k | 568M | 411.8 | 195.6 | 436.2 | 641.7 | 649.3 | 726.0 | 9.2 | 275.1 | 342.8 |
 | Dongjin-kr/ko-reranker | 560M | 520.8 | 258.0 | 468.3 | 644.1 | 747.6 | 765.2 | 272.7 | 334.4 | 381.2 |
 | telepix/PIXIE-Spell-Reranker-Preview-0.6B | 596M | 104.6 | 49.4 | 106.3 | 141.5 | 160.5 | 175.6 | 4.3 | 72.1 | 82.6 |
+
+</details>
 
 
 ## Citation
