@@ -40,7 +40,8 @@ _apply_tf5_compat()
 V2_ROOT = Path(__file__).resolve().parents[1]
 POOL_DIR = V2_ROOT / "eval/results/stage1/top_1k_qrels"
 OUT_DIR = V2_ROOT / "eval/results/stage2"
-NEG_TOP_K = 50  # 정답 외 negative 후보로 사용할 BM25 상위 개수
+NEG_TOP_K = 50  # BM25 pool 상위 개수 — 이 중 정답을 뺀 나머지가 negative 후보 (pool 은 정답이 맨 앞)
+POOL_ALIGN_MIN = 0.99  # pool[0] 이 그 query 의 정답인 비율 하한 — 미만이면 pool 과 query ID 가 어긋난 것
 MAX_LENGTH = 8192  # 전 모델 공통 최대 시퀀스 길이(공정 비교). 결과 json 에 _max_length 로 기록.
 
 # 한국어 벤치 10종 (기존 리더보드와 동일 집합)
@@ -102,13 +103,12 @@ def _load_pool(task_name: str) -> dict[str, list[str]]:
     if task_name in _pool_cache:
         return _pool_cache[task_name]
     path = POOL_DIR / f"{task_name}_id.jsonl"
+    if not path.exists():  # pool 없이 진행하면 gold 만으로 채점돼 NDCG≈1.0 이 정상 결과처럼 저장된다
+        raise FileNotFoundError(f"[gold-inject] pool file 없음: {path}")
     pool: dict[str, list[str]] = {}
-    if path.exists():
-        for line in open(path):
-            d = json.loads(line)
-            pool[str(d["query_id"])] = [str(x) for x in d["relevance_ids"]]
-    else:
-        print(f"[gold-inject] WARNING: pool file 없음: {path}")
+    for line in open(path):
+        d = json.loads(line)
+        pool[str(d["query_id"])] = [str(x) for x in d["relevance_ids"]]
     _pool_cache[task_name] = pool
     return pool
 
@@ -134,6 +134,13 @@ def _gold_inject_evaluate_subset(self, model, data_split, *, hf_split, hf_subset
         qids = [str(q) for q in queries.keys()]
     else:
         qids = [str(r.get("id") if hasattr(r, "get") else r) for r in queries]
+
+    # pool 은 query 별로 정답을 맨 앞에 두고 저장된다 → pool[0] 이 그 query 의 정답이 아니면 pool 과 평가 데이터의
+    # query ID 가 어긋난 것(예: mteb 1.x 의 set() 순서 ID 로 만든 pool). 다른 query 의 후보가 negative 로 붙으므로 중단.
+    aligned = sum(bool(pool.get(q)) and pool[q][0] in (rels.get(q, {}) if hasattr(rels, "get") else {}) for q in qids)
+    if aligned < POOL_ALIGN_MIN * len(qids):
+        raise ValueError(f"[gold-inject] {self.metadata.name}[{hf_subset}/{hf_split}] pool 과 query ID 불일치: "
+                         f"pool[0]=정답 {aligned}/{len(qids)} — {POOL_DIR} 의 pool 을 mteb 2.x ID 기준으로 다시 만들 것")
 
     tr: dict[str, list[str]] = {}
     n_noneg = 0
@@ -280,7 +287,9 @@ def load_model(model_name: str, device: str, batch_size: int = 16):
 # ============================================================================
 def get_task(task_name: str):
     try:
-        ts = mteb.get_tasks(tasks=[task_name], languages=KOR_LANG)
+        # exclusive: 모든 언어가 한국어인 subset 만 — BelebeleRetrieval 은 kor_Hang-kor_Hang 하나만 평가
+        # (교차언어 kor↔eng subset 은 BM25 negative 를 만들 수 없음). 다른 task 의 subset 은 그대로.
+        ts = mteb.get_tasks(tasks=[task_name], languages=KOR_LANG, exclusive_language_filter=True)
         if ts:
             return ts[0]
     except Exception:
@@ -334,6 +343,7 @@ def eval_one_model(model_name: str, tasks: list[str], device: str, overwrite: bo
         print(f"[speed] attn={attn}", flush=True)
     out_model_dir = out_dir / model_name
     out_model_dir.mkdir(parents=True, exist_ok=True)
+    failures = []
     for task_name in tasks:
         out_path = out_model_dir / f"{task_name}.json"
         if out_path.exists() and not overwrite:
@@ -343,6 +353,7 @@ def eval_one_model(model_name: str, tasks: list[str], device: str, overwrite: bo
             t = get_task(task_name)
             if t is None:
                 print(f"[error] task 없음: {task_name}", flush=True)
+                failures.append(f"{model_name} / {task_name}: task 없음")
                 continue
             print(f"\n=== {model_name} × {task_name} ===", flush=True)
             if tap:
@@ -369,6 +380,8 @@ def eval_one_model(model_name: str, tasks: list[str], device: str, overwrite: bo
         except Exception as ex:
             print(f"[error] {model_name} / {task_name}: {ex}", flush=True)
             traceback.print_exc()
+            failures.append(f"{model_name} / {task_name}: {ex}")
+    return failures
 
 
 def main():
@@ -388,13 +401,18 @@ def main():
 
     device = f"cuda:{args.gpu_id}" if torch.cuda.is_available() else "cpu"
     print(f"device={device} | models={len(args.model_names)} tasks={len(args.tasks)}", flush=True)
+    failures = []
     for model_name in args.model_names:
         try:
-            eval_one_model(model_name, args.tasks, device, args.overwrite, args.batch_size,
-                           args.out_dir, args.speed, args.speed_samples)
+            failures += eval_one_model(model_name, args.tasks, device, args.overwrite, args.batch_size,
+                                       args.out_dir, args.speed, args.speed_samples)
         except Exception as ex:
             print(f"[error] model {model_name}: {ex}", flush=True)
             traceback.print_exc()
+            failures.append(f"model {model_name}: {ex}")
+    if failures:  # 부분 실패를 정상 완주와 구분: 실패 목록 + 종료 코드 1
+        print(f"FAILED ({len(failures)}):\n  " + "\n  ".join(failures), flush=True)
+        raise SystemExit(1)
     print("ALL_DONE", flush=True)
 
 

@@ -136,7 +136,7 @@ def main():
     ax.xaxis.set_major_locator(FixedLocator(ticks))
     ax.xaxis.set_major_formatter(FixedFormatter([f"{t:g}" for t in ticks]))
     ax.xaxis.set_minor_formatter(NullFormatter())
-    ax.set_xlim(9, max(xs) * 2.3)
+    ax.set_xlim(9, max(xs) * 3.2)  # 오른쪽 여유: KURE-Reranker-nano 라벨이 축 안에 들어오게
     ax.set_ylim(min(ys) - 0.02, max(ys) + 0.03)  # 위쪽 여유: 그래프 안 범례 자리
 
     ax.set_xlabel("Mean PPS (pairs/s)", fontsize=14, color=INK)
