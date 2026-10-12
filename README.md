@@ -24,7 +24,7 @@ BM25 기반 Stage 1 검색(토크나이저별 비교, 실행 코드, 결과)은 
 | [MrTidyRetrieval](https://huggingface.co/datasets/mteb/mrtidy) | Wikipedia 기반 한국어 문서 검색 | test | 421 |
 | [SQuADKorV1Retrieval](https://huggingface.co/datasets/yjoonjang/squad_kor_v1) | 한국어 SQuAD v1.0 기반 검색 | test | 5,774 |
 | [LawIRKo](https://huggingface.co/datasets/on-and-on/lawgov_ir-ko) | 한국어 법률 정보 검색 | test | 3,563 |
-| [MultiLongDocRetrieval](https://huggingface.co/datasets/Shitao/MLDR) | 다양한 도메인 한국어 **장문** 검색 | dev+test | 400 |
+| [MultiLongDocRetrieval](https://huggingface.co/datasets/Shitao/MLDR) | 다양한 도메인 한국어 장문 검색 | dev+test | 400 |
 > **Note**: 기존 XPQARetrieval·WebFAQRetrieval 은 공식 MTEB(kor, v2) subset 이 아니므로 제외합니다.
 
 ### Evaluation Method
@@ -64,23 +64,23 @@ uv run streamlit run leaderboard_reranker.py
 <!-- **공식 9개 subset 을 모두 평가한 모델**의 9-subset mean NDCG@10, PPS -->
 | Model | Params | Mean NDCG@10 | Mean PPS |
 |---|---|---|---|
-| Qwen/Qwen3-Reranker-8B | 8.2B | 0.8990 | 15.0 |
-| Qwen/Qwen3-Reranker-4B | 4.0B | 0.8916 | 24.3 |
-| KaLM-Embedding/KaLM-Reranker-V1-Large-R2 | 7.5B | 0.8910 | 25.3 |
-| nlpai-lab/KURE-Reranker-base | 1.7B | 0.8800 | 55.0 |
-| nlpai-lab/KURE-Reranker-nano | 149M | 0.8757 | 482.4 |
-| zeroentropy/zerank-2-reranker | 4.0B | 0.8652 | 29.3 |
-| mixedbread-ai/mxbai-rerank-large-v2 | 1.5B | 0.8607 | 64.8 |
-| lightonai/LightOn-rerank-PW-4B | 4.5B | 0.8605 | 15.1 |
-| Qwen/Qwen3-Reranker-0.6B | 596M | 0.8528 | 101.0 |
-| BAAI/bge-reranker-v2-m3 | 568M | 0.8518 | 412.6 |
-| nvidia/llama-nemotron-rerank-1b-v2 | 1.2B | 0.8468 | 128.2 |
-| nlpai-lab/LAMAR-600m | 568M | 0.8375 | 415.0 |
-| dragonkue/bge-reranker-v2-m3-ko | 568M | 0.8199 | 409.1 |
-| BAAI/bge-reranker-v2-gemma | 2.5B | 0.8099 | 58.8 |
-| upskyy/ko-reranker-8k | 568M | 0.8054 | 409.8 |
-| Dongjin-kr/ko-reranker | 560M | 0.7861 | 488.0 |
-| telepix/PIXIE-Spell-Reranker-Preview-0.6B | 596M | 0.7760 | 99.7 |
+| [Qwen/Qwen3-Reranker-8B](https://huggingface.co/Qwen/Qwen3-Reranker-8B) | 8.2B | 0.8990 | 15.0 |
+| [Qwen/Qwen3-Reranker-4B](https://huggingface.co/Qwen/Qwen3-Reranker-4B) | 4.0B | 0.8916 | 24.3 |
+| [KaLM-Embedding/KaLM-Reranker-V1-Large-R2](https://huggingface.co/KaLM-Embedding/KaLM-Reranker-V1-Large-R2) | 7.5B | 0.8910 | 25.3 |
+| [nlpai-lab/KURE-Reranker-base](https://huggingface.co/nlpai-lab/KURE-Reranker-base) | 1.7B | 0.8800 | 55.0 |
+| [nlpai-lab/KURE-Reranker-nano](https://huggingface.co/nlpai-lab/KURE-Reranker-nano) | 149M | 0.8757 | 482.4 |
+| [zeroentropy/zerank-2-reranker](https://huggingface.co/zeroentropy/zerank-2-reranker) | 4.0B | 0.8652 | 29.3 |
+| [mixedbread-ai/mxbai-rerank-large-v2](https://huggingface.co/mixedbread-ai/mxbai-rerank-large-v2) | 1.5B | 0.8607 | 64.8 |
+| [lightonai/LightOn-rerank-PW-4B](https://huggingface.co/lightonai/LightOn-rerank-PW-4B) | 4.5B | 0.8605 | 15.1 |
+| [Qwen/Qwen3-Reranker-0.6B](https://huggingface.co/Qwen/Qwen3-Reranker-0.6B) | 596M | 0.8528 | 101.0 |
+| [BAAI/bge-reranker-v2-m3](https://huggingface.co/BAAI/bge-reranker-v2-m3) | 568M | 0.8518 | 412.6 |
+| [nvidia/llama-nemotron-rerank-1b-v2](https://huggingface.co/nvidia/llama-nemotron-rerank-1b-v2) | 1.2B | 0.8468 | 128.2 |
+| [nlpai-lab/LAMAR-600m](https://huggingface.co/nlpai-lab/LAMAR-600m) | 568M | 0.8375 | 415.0 |
+| [dragonkue/bge-reranker-v2-m3-ko](https://huggingface.co/dragonkue/bge-reranker-v2-m3-ko) | 568M | 0.8199 | 409.1 |
+| [BAAI/bge-reranker-v2-gemma](https://huggingface.co/BAAI/bge-reranker-v2-gemma) | 2.5B | 0.8099 | 58.8 |
+| [upskyy/ko-reranker-8k](https://huggingface.co/upskyy/ko-reranker-8k) | 568M | 0.8054 | 409.8 |
+| [Dongjin-kr/ko-reranker](https://huggingface.co/Dongjin-kr/ko-reranker) | 560M | 0.7861 | 488.0 |
+| [telepix/PIXIE-Spell-Reranker-Preview-0.6B](https://huggingface.co/telepix/PIXIE-Spell-Reranker-Preview-0.6B) | 596M | 0.7760 | 99.7 |
 
 **Mean PPS** = 추론 처리량(query–document pairs/s), 9 subset 평균. RTX A6000 1장, bf16 + flash_attention_2 (`KaLM-Reranker-V1-Large-R2` 는 T5Gemma2 아키텍처로, flash_attention_2 를 지원하지 않아 sdpa를 사용).
 
