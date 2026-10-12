@@ -11,7 +11,8 @@ BM25 기반 Stage 1 검색(토크나이저별 비교, 실행 코드, 결과)은 
 
 ## Stage 2 Reranking
 ### Benchmark Datasets
-**공식 [MTEB(kor, v2)](https://github.com/embeddings-benchmark/mteb) 의 9개 Korean Retrieval 벤치마크** (총 12,054 queries)에 대한 평가를 진행하였습니다. 각 task 는 MTEB 표준 `eval_splits` 를 그대로 사용합니다 (예: MLDR = dev+test 평균, MIRACL/Ko-StrategyQA = dev, 그 외 = test).
+**공식 [MTEB(kor, v2)](https://github.com/embeddings-benchmark/mteb) 의 9개 Korean Retrieval 벤치마크** (총 12,054 queries)에 대한 평가를 진행하였습니다. 
+각 task 는 MTEB 표준 `eval_splits` 를 그대로 사용합니다 (예: MLDR = dev+test 평균, MIRACL/Ko-StrategyQA = dev, 그 외 = test).
 
 | 데이터셋 | 설명 | split | queries |
 |---|---|---|---|
@@ -27,11 +28,9 @@ BM25 기반 Stage 1 검색(토크나이저별 비교, 실행 코드, 결과)은 
 > **Note**: 기존 XPQARetrieval·WebFAQRetrieval 은 공식 MTEB(kor, v2) subset 이 아니므로 제외합니다.
 
 ### Evaluation Method
-- **Gold-injected reranking**: 각 query 의 **정답(gold) 문서를 재랭킹 후보 집합에 항상 포함**시킨 뒤 (후보 = 정답 + BM25 상위 50개 중 정답을 뺀 나머지가 negative) reranker 로 재랭킹합니다. BM25 가 정답을 top-50 안에 놓치더라도 reranker 의 순수 랭킹 품질을 측정하기 위함입니다.
-- **Max sequence length**: **모든 모델을 `max_length=8192` 로 측정**합니다. 단, **아키텍처상 8192 를 지원하지 않는 모델은 네이티브 최대 길이로 측정**합니다. 각 결과 파일(`eval/results/stage2/<model>/<task>.json`)에 실제 적용된 `_max_length` 가 기록됩니다.
-	- `Dongjin-kr/ko-reranker` = 512
-	- `KaLM-Embedding/KaLM-Reranker-V1-Large-R2` = 문서 8192 (encoder–decoder 구조로, query 는 decoder 에 모델 설계상 최대 512)
-- **Pairs Per Second (PPS)**: [Ettin-Reranker 블로그](https://huggingface.co/blog/ettin-reranker)를 참고하여, batch size 를 8 부터 2배씩 첫 OOM 까지 늘리며, 각 batch size 에서 샘플을 그 배수로 반복·길이 내림차순 정렬한 뒤 warmup 1회 + 3회 반복합니다. 모델 forward 호출만 CUDA event 로 재므로 토크나이즈·데이터 로딩은 제외되며, PPS = 처리 쌍 수 / forward 시간 합, 가장 빠른 batch size 의 값을 기록합니다 (`pps`, `pps_batch_size`, `pps_sweep`).
+- **Gold-injected reranking**: 각 query 의 정답(gold) 문서를 재랭킹 후보 집합에 항상 포함시킨 뒤 (후보 = 정답 + BM25 상위 50개 중 정답을 뺀 나머지가 negative) reranker 로 재랭킹합니다.
+- **Max sequence length**: 모든 모델을 `max_length=8192` 로 측정합니다. 단, 아키텍처상 8192 를 지원하지 않는 모델은 해당 모델의 최대 길이로 측정합니다.
+- **Pairs Per Second (PPS)**: [Ettin-Reranker 블로그](https://huggingface.co/blog/ettin-reranker)를 참고하여, batch size 를 8 부터 2배씩 첫 OOM 까지 늘리며, 각 batch size 에서 샘플을 그 배수로 반복·길이 내림차순 정렬한 뒤 warmup 1회 + 3회 반복합니다. 모델 forward 호출만 CUDA event 로 재므로 토크나이즈·데이터 로딩은 제외되며, PPS = 처리 쌍 수 / forward 시간 합, 가장 빠른 batch size 의 값을 기록합니다.
 
 ### Evaluation Code
 ```bash
@@ -57,11 +56,11 @@ cd eval
 uv run streamlit run leaderboard_reranker.py
 ```
 
-**추론 처리량 vs. 성능** (x축: Mean PPS — 20–26 구간을 확대하고 26–50 구간을 압축한 비균일 로그 축, 점 색: 모델 크기, jina-reranker-v3/v3.5 는 제외)
+**추론 처리량 vs. 성능** 
 
 ![Reranker throughput (mean PPS) vs. NDCG@10 (official kMTEB 9 subsets)](assets/pps_vs_ndcg9.png)
 
-### Results — Official kMTEB (9 subsets)
+### Results (Averaged)
 <!-- **공식 9개 subset 을 모두 평가한 모델**의 9-subset mean NDCG@10, PPS -->
 | Model | Params | Mean NDCG@10 | Mean PPS |
 |---|---|---|---|
@@ -83,7 +82,7 @@ uv run streamlit run leaderboard_reranker.py
 | Dongjin-kr/ko-reranker | 560M | 0.7861 | 488.0 |
 | telepix/PIXIE-Spell-Reranker-Preview-0.6B | 596M | 0.7760 | 99.7 |
 
-**Mean PPS** = 추론 처리량(query–document pairs/s), 9 subset 평균. RTX A6000 1장, bf16 + flash_attention_2 (`KaLM-Reranker-V1-Large-R2` 는 T5Gemma2 가 flash_attention_2 를 지원하지 않아 sdpa를 사용).
+**Mean PPS** = 추론 처리량(query–document pairs/s), 9 subset 평균. RTX A6000 1장, bf16 + flash_attention_2 (`KaLM-Reranker-V1-Large-R2` 는 T5Gemma2 아키텍처로, flash_attention_2 를 지원하지 않아 sdpa를 사용).
 
 > `jinaai/jina-reranker-v3` 와 `jinaai/jina-reranker-v3.5` 는 **listwise** reranker 로, 장문(`MultiLongDocRetrieval`)에서 다른 모델과 동일 조건(8192)으로 공정 비교가 불가능하여 두 모델 모두 MLDR 을 N/A 로 두고 위 9-subset 평가에서 제외합니다. 
 
