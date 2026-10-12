@@ -1,7 +1,7 @@
 """stage2 결과(eval/results/stage2/<model>/<task>.json) 로딩·집계 — streamlit 리더보드와 산점도가 공용.
 
 `collect()` 는 {model: {task: {ndcg_at_1, ndcg_at_5, ndcg_at_10, pps}}} 를, `_mean_over` 는 task 평균 NDCG@1/5/10 을,
-`mean_pps` 는 MLDR 제외 8-task 평균 PPS 를 돌려준다. `MODEL_SIZES` 는 모델 파라미터 수(실측).
+`mean_pps` 는 task 평균 PPS(기본 9개 공식 subset, MLDR 포함)를 돌려준다. `MODEL_SIZES` 는 모델 파라미터 수(실측).
 """
 import glob
 import json
@@ -40,11 +40,10 @@ def collect():
 
 
 MLDR = "MultiLongDocRetrieval"  # 장문 task — listwise 모델은 token-length OOD 로 8192 tractable 초과
-# 8-task PPS 는 MLDR 제외 8 subset 평균 — 장문에선 모델별 입력 상한(512~8192)이 처리량을 지배하므로
-# MLDR 은 평균에 넣지 않고 별도 열(MLDR PPS)로 둔다.
-PPS_TASKS = [t for t in TASKS if t != MLDR]
-PPS_NOTE = ("**8-task PPS** = 추론 처리량(query–document pairs/s), MLDR 제외 8 subset 평균. RTX A6000 1장, "
-            "bf16 + flash_attention_2, `--speed` 로 측정 (측정 방식은 *Methodology* 참고).")
+# Mean PPS 는 NDCG 평균과 같은 task 들의 평균(README·산점도와 같은 정의: 공식 9 subset, MLDR 포함).
+# 장문(MLDR)에선 입력 상한이 짧은 모델(ko-reranker 512)이 유리하다 — per-dataset PPS 표에서 따로 확인.
+PPS_NOTE = ("**Mean PPS** = 추론 처리량(query–document pairs/s), 표의 task 평균(9-subset 표는 MLDR 포함). "
+            "RTX A6000 1장, bf16 + flash_attention_2, `--speed` 로 측정 (측정 방식은 *Methodology* 참고).")
 
 # 모델 파라미터 수(실측: 캐시된 safetensors 헤더의 tensor shape 합). 표 Params 열·산점도(크기 x축, PPS 그림 라벨·색)에 사용.
 MODEL_SIZES = {
@@ -95,7 +94,7 @@ def _mean_over(data, model, tasks):
     return v1 / n, v5 / n, v10 / n
 
 
-def mean_pps(data, model, tasks=PPS_TASKS):
-    """tasks(기본 MLDR 제외 8개) 전부에 PPS 가 있으면 평균, 하나라도 결측이면 None."""
+def mean_pps(data, model, tasks=TASKS):
+    """tasks(기본 공식 9 subset) 전부에 PPS 가 있으면 평균, 하나라도 결측이면 None."""
     vals = [(data[model].get(t) or {}).get("pps") for t in tasks]
     return None if any(v is None for v in vals) else sum(vals) / len(vals)

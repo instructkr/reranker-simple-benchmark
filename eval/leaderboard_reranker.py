@@ -4,7 +4,7 @@
   - 결과: `eval/results/stage2/<model>/<task>.json` (task별 mteb 공식 get_score 값 = subset·split 평균,
     예: MultiLongDocRetrieval = dev+test 평균).
   - 표: 공식 9-subset mean + MLDR 제외 8-subset mean(listwise/long-doc OOD 공정 비교) + per-dataset NDCG@10.
-지표는 NDCG@1/5/10 중심. 정답(gold)을 재랭킹 후보에 항상 포함, max_length 8192(ko-reranker 512, ettin 7999).
+지표는 NDCG@1/5/10 중심. 정답(gold)을 재랭킹 후보에 항상 포함, max_length 8192(ko-reranker 512).
 
 실행: cd eval && uv run streamlit run leaderboard_reranker.py
 """
@@ -21,8 +21,8 @@ st.set_page_config(layout="wide")
 
 
 def _mean_df(data, tasks):
-    # README 와 동일: 공식 9-subset 표(MLDR 포함)는 mean NDCG@10 + 8-task PPS + MLDR PPS,
-    # 8-subset 표는 NDCG@1/5/10 + 8-task PPS.
+    # README 와 동일: Mean PPS 는 그 표의 NDCG 평균과 같은 tasks 의 평균 (9-subset 표 = MLDR 포함).
+    # 9-subset 표는 mean NDCG@10 + Mean PPS, 8-subset 표는 NDCG@1/5/10 + Mean PPS.
     mldr_col = MLDR in tasks
     r1 = lambda v, n: round(v, n) if v is not None else None  # noqa: E731
     rows = []
@@ -30,14 +30,13 @@ def _mean_df(data, tasks):
         r = _mean_over(data, model, tasks)  # tasks 전부 있어야 값(하나라도 결측이면 제외)
         if not r:
             continue
-        pps8 = r1(mean_pps(data, model), 1)
+        pps = r1(mean_pps(data, model, tasks), 1)
         if mldr_col:
-            rows.append([model, size_label(model), r1(r[2], 4), pps8,
-                         r1((data[model].get(MLDR) or {}).get("pps"), 1)])
+            rows.append([model, size_label(model), r1(r[2], 4), pps])
         else:
-            rows.append([model, size_label(model), r1(r[0], 4), r1(r[1], 4), r1(r[2], 4), pps8])
-    cols = (["Model", "Params", "Mean NDCG@10", "8-task PPS", "MLDR PPS"] if mldr_col else
-            ["Model", "Params", "Mean NDCG@1", "Mean NDCG@5", "Mean NDCG@10", "8-task PPS"])
+            rows.append([model, size_label(model), r1(r[0], 4), r1(r[1], 4), r1(r[2], 4), pps])
+    cols = (["Model", "Params", "Mean NDCG@10", "Mean PPS"] if mldr_col else
+            ["Model", "Params", "Mean NDCG@1", "Mean NDCG@5", "Mean NDCG@10", "Mean PPS"])
     df = pd.DataFrame(rows, columns=cols)
     return df.sort_values("Mean NDCG@10", ascending=False).reset_index(drop=True)
 
@@ -48,8 +47,9 @@ def app():
 
     st.title("Korean Reranker Leaderboard — gold-injected, official kMTEB (mteb 2.x)")
     st.caption(
-        "정답(gold) 문서를 재랭킹 후보에 항상 포함(BM25 top-50 ∪ gold). max_length 8192 "
-        "(ko-reranker 512, ettin 7999). 집계 = mteb 공식 get_score(subset·split 평균, MLDR=dev+test). "
+        "정답(gold) 문서를 재랭킹 후보에 항상 포함(후보 = 정답 + BM25 상위 50개 중 정답을 뺀 나머지가 negative, "
+        "BelebeleRetrieval 은 kor_Hang-kor_Hang subset). max_length 8192 (ko-reranker 512). "
+        "집계 = mteb 공식 get_score(subset·split 평균, MLDR=dev+test). "
         + PPS_NOTE.replace("*", "")
     )
 
