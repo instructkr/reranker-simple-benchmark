@@ -116,7 +116,7 @@ def main():
     for upper, name, color in SIZE_BINS:
         sel = [(x, y) for x, y, m in pts if size_color(MODEL_SIZES[m] / 1e9) == color]
         ax.scatter([x for x, _ in sel], [y for _, y in sel], s=110, color=color,
-                   edgecolor="white", linewidth=1.6, zorder=3, label=name)
+                   edgecolor="black", linewidth=0.8, zorder=3, label=name)
 
     for x, y, model in pts:
         name = SHORT.get(model, model.split("/")[-1])
@@ -145,7 +145,7 @@ def main():
     items = [TextArea("Model Size", textprops={"fontsize": 11, "color": INK})]
     for _, name, color in SIZE_BINS:
         dot = DrawingArea(11, 11)
-        dot.add_artist(Circle((5.5, 5.5), 5, facecolor=color, edgecolor="white", linewidth=1.0))
+        dot.add_artist(Circle((5.5, 5.5), 5, facecolor=color, edgecolor="black", linewidth=0.6))
         items.append(HPacker(children=[dot, TextArea(name, textprops={"fontsize": 11, "color": INK})],
                              pad=0, sep=4, align="center"))
     box = AnchoredOffsetbox(loc="upper right", child=HPacker(children=items, pad=0, sep=16, align="center"),
