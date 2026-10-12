@@ -141,7 +141,7 @@ def main():
 
     ax.set_xlabel("Mean PPS (pairs/s)", fontsize=14, color=INK)
     ax.set_ylabel("Mean nDCG@10", fontsize=14, color=INK)
-    # 범례: 그래프 안 위쪽, 오른쪽 끝을 x=900 에 맞춤 (1000 눈금 앞), "Model Size" 제목까지 한 상자로 묶어 가로 한 줄
+    # 범례: 그래프 안 오른쪽 위 모서리, "Model Size" 제목까지 한 상자로 묶어 가로 한 줄
     items = [TextArea("Model Size", textprops={"fontsize": 11, "color": INK})]
     for _, name, color in SIZE_BINS:
         dot = DrawingArea(11, 11)
@@ -149,7 +149,7 @@ def main():
         items.append(HPacker(children=[dot, TextArea(name, textprops={"fontsize": 11, "color": INK})],
                              pad=0, sep=4, align="center"))
     box = AnchoredOffsetbox(loc="upper right", child=HPacker(children=items, pad=0, sep=16, align="center"),
-                            bbox_to_anchor=(900, 0.985), bbox_transform=ax.get_xaxis_transform(), frameon=True,
+                            bbox_to_anchor=(0.99, 0.985), bbox_transform=ax.transAxes, frameon=True,
                             pad=0.45, borderpad=0)
     box.patch.set_boxstyle("round,pad=0.2,rounding_size=0.4")
     box.patch.set_edgecolor("#d5dae2"); box.patch.set_linewidth(0.8); box.patch.set_facecolor("white")
