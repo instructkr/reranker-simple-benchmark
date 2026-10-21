@@ -41,7 +41,7 @@ SHORT = {
     "Qwen/Qwen3-Reranker-8B": "Qwen3-8B",
     "Qwen/Qwen3-Reranker-4B": "Qwen3-4B",
     "Qwen/Qwen3-Reranker-0.6B": "Qwen3-0.6B",
-    "KaLM-Embedding/KaLM-Reranker-V1-Large-R2": "KaLM-Large-R2",
+    "KaLM-Embedding/KaLM-Reranker-V1-Large-R2": "KaLM-R2",
     "zeroentropy/zerank-2-reranker": "zerank-2",
     "lightonai/LightOn-rerank-PW-4B": "LightOn-4B",
     "mixedbread-ai/mxbai-rerank-large-v2": "mxbai-large-v2",
@@ -62,7 +62,7 @@ SHORT = {
 OFFSET = {
     "zerank-2": (-16, -15, "center"),  # 점 바로 아래
     "Qwen3-8B": (10, 5),
-    "KaLM-Large-R2": (10, 0),
+    "KaLM-R2": (14, 15, "center"),  # 점 위 조금 오른쪽 (오른쪽은 KURE-Reranker-base 라벨)
     "Qwen3-4B": (-14, -14, "center"),  # 점 바로 아래
     "mxbai-large-v2": (10, 6),
     "LightOn-4B": (10, -5),

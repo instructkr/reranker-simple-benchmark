@@ -67,7 +67,7 @@ uv run streamlit run leaderboard_reranker.py
 | [Qwen/Qwen3-Reranker-8B](https://huggingface.co/Qwen/Qwen3-Reranker-8B) | 8.2B | 0.8990 | 15.0 |
 | [Qwen/Qwen3-Reranker-4B](https://huggingface.co/Qwen/Qwen3-Reranker-4B) | 4.0B | 0.8916 | 24.3 |
 | [KaLM-Embedding/KaLM-Reranker-V1-Large-R2](https://huggingface.co/KaLM-Embedding/KaLM-Reranker-V1-Large-R2) | 7.5B | 0.8910 | 25.3 |
-| [nlpai-lab/KURE-Reranker-base](https://huggingface.co/nlpai-lab/KURE-Reranker-base) | 1.7B | 0.8800 | 55.0 |
+| [nlpai-lab/KURE-Reranker-base](https://huggingface.co/nlpai-lab/KURE-Reranker-base) | 1.7B | 0.8908 | 56.2 |
 | [nlpai-lab/KURE-Reranker-nano](https://huggingface.co/nlpai-lab/KURE-Reranker-nano) | 149M | 0.8757 | 482.4 |
 | [zeroentropy/zerank-2-reranker](https://huggingface.co/zeroentropy/zerank-2-reranker) | 4.0B | 0.8652 | 29.3 |
 | [mixedbread-ai/mxbai-rerank-large-v2](https://huggingface.co/mixedbread-ai/mxbai-rerank-large-v2) | 1.5B | 0.8607 | 64.8 |
@@ -94,7 +94,7 @@ uv run streamlit run leaderboard_reranker.py
 | Qwen/Qwen3-Reranker-8B | 8.2B | 0.8720 | 0.9653 | 0.8654 | 0.9785 | 0.8513 | 0.8416 | 0.8255 | 0.9897 | 0.9013 |
 | Qwen/Qwen3-Reranker-4B | 4.0B | 0.8733 | 0.9630 | 0.8442 | 0.9794 | 0.8559 | 0.8298 | 0.8161 | 0.9861 | 0.8766 |
 | KaLM-Embedding/KaLM-Reranker-V1-Large-R2 | 7.5B | 0.8796 | 0.9415 | 0.8633 | 0.9809 | 0.8382 | 0.8500 | 0.7970 | 0.9863 | 0.8824 |
-| nlpai-lab/KURE-Reranker-base | 1.7B | 0.8548 | 0.9762 | 0.8381 | 0.9767 | 0.8371 | 0.7970 | 0.8163 | 0.9891 | 0.8343 |
+| nlpai-lab/KURE-Reranker-base | 1.7B | 0.8605 | 0.9870 | 0.8331 | 0.9757 | 0.8496 | 0.8252 | 0.8189 | 0.9907 | 0.8768 |
 | nlpai-lab/KURE-Reranker-nano | 149M | 0.8582 | 0.9741 | 0.8078 | 0.9768 | 0.8400 | 0.8011 | 0.7966 | 0.9895 | 0.8368 |
 | jinaai/jina-reranker-v3.5 | 597M | 0.8539 | 0.9838 | 0.8337 | 0.9659 | 0.8565 | 0.8194 | — | 0.9887 | 0.8545 |
 | jinaai/jina-reranker-v3 | 597M | 0.8553 | 0.9773 | 0.7762 | 0.9606 | 0.8449 | 0.8104 | — | 0.9859 | 0.8546 |
@@ -121,7 +121,7 @@ uv run streamlit run leaderboard_reranker.py
 | Qwen/Qwen3-Reranker-8B | 8.2B | 16.5 | 7.4 | 15.3 | 20.5 | 25.0 | 26.6 | 0.7 | 10.8 | 12.4 |
 | Qwen/Qwen3-Reranker-4B | 4.0B | 26.2 | 11.8 | 25.6 | 34.5 | 40.1 | 42.8 | 1.1 | 17.1 | 19.9 |
 | KaLM-Embedding/KaLM-Reranker-V1-Large-R2 | 7.5B | 28.6 | 12.4 | 25.4 | 36.9 | 39.6 | 43.8 | 0.8 | 18.7 | 21.4 |
-| nlpai-lab/KURE-Reranker-base | 1.7B | 59.2 | 27.3 | 58.0 | 77.0 | 89.1 | 97.1 | 2.6 | 39.1 | 45.7 |
+| nlpai-lab/KURE-Reranker-base | 1.7B | 60.9 | 27.9 | 58.5 | 77.9 | 91.7 | 99.7 | 2.5 | 39.9 | 46.2 |
 | nlpai-lab/KURE-Reranker-nano | 149M | 475.4 | 233.2 | 529.0 | 750.0 | 765.8 | 855.2 | 16.5 | 330.8 | 386.0 |
 | jinaai/jina-reranker-v3.5 | 597M | 141.0 | 38.6 | 123.2 | 197.5 | 277.3 | 295.7 | — | 68.4 | 86.7 |
 | jinaai/jina-reranker-v3 | 597M | 113.8 | 25.0 | 95.7 | 166.3 | 244.6 | 261.6 | — | 48.7 | 64.0 |
