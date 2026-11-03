@@ -33,7 +33,7 @@ SIZE_BINS = [
     (0.5, "< 0.5B", "#b8646e"),
     (1.0, "0.5–1B", "#6f9fc2"),
     (3.0, "1–3B", "#d6a55c"),
-    (float("inf"), "≥ 3B", "#4d4a7a"),
+    (float("inf"), "≥ 3B", "#5a52b0"),
 ]
 
 # 라벨용 축약명 (충돌·오버플로 완화). 없으면 basename.
@@ -56,12 +56,13 @@ SHORT = {
     "cross-encoder/ettin-reranker-1b-v1": "ettin-1b",
     "nlpai-lab/KURE-Reranker-nano": "KURE-Reranker-nano",
     "nlpai-lab/KURE-Reranker-base": "KURE-Reranker-base",
+    "nvidia/Nemotron-3.5-Rerank-8B-BF16": "Nemotron-3.5-8B",
 }
 
 # 점이 겹치는 모델의 라벨 오프셋(points). 없으면 점 오른쪽. dx<0 이면 점 왼쪽에 우측 정렬.
 OFFSET = {
     "zerank-2": (-16, -15, "center"),  # 점 바로 아래
-    "Qwen3-8B": (10, 5),
+    "Qwen3-8B": (-6, 14, "center"),  # 점 위 조금 왼쪽 (오른쪽은 Nemotron 라벨)
     "KaLM-R2": (14, 15, "center"),  # 점 위 조금 오른쪽 (오른쪽은 KURE-Reranker-base 라벨)
     "Qwen3-4B": (-14, -14, "center"),  # 점 바로 아래
     "mxbai-large-v2": (10, 6),
@@ -72,6 +73,7 @@ OFFSET = {
     "LAMAR-600m": (10, 0),
     "bge-v2-m3-ko": (-10, 0),
     "ko-reranker-8k": (-10, 0),
+    "Nemotron-3.5-8B": (20, 14, "center"),  # 점 위 조금 오른쪽 (오른쪽 아래는 KaLM-R2 라벨)
 }
 
 

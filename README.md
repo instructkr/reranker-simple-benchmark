@@ -65,6 +65,7 @@ uv run streamlit run leaderboard_reranker.py
 | Model | Params | Mean NDCG@10 | Mean PPS |
 |---|---|---|---|
 | [Qwen/Qwen3-Reranker-8B](https://huggingface.co/Qwen/Qwen3-Reranker-8B) | 8.2B | 0.8990 | 15.0 |
+| [nvidia/Nemotron-3.5-Rerank-8B-BF16](https://huggingface.co/nvidia/Nemotron-3.5-Rerank-8B-BF16) | 8.4B | 0.8972 | 22.4 |
 | [Qwen/Qwen3-Reranker-4B](https://huggingface.co/Qwen/Qwen3-Reranker-4B) | 4.0B | 0.8916 | 24.3 |
 | [KaLM-Embedding/KaLM-Reranker-V1-Large-R2](https://huggingface.co/KaLM-Embedding/KaLM-Reranker-V1-Large-R2) | 7.5B | 0.8910 | 25.3 |
 | [nlpai-lab/KURE-Reranker-base](https://huggingface.co/nlpai-lab/KURE-Reranker-base) | 1.7B | 0.8908 | 56.2 |
@@ -92,6 +93,7 @@ uv run streamlit run leaderboard_reranker.py
 | Model | Params | Ko-StrategyQA | AutoRAGRetrieval | PublicHealthQA | BelebeleRetrieval | MIRACLRetrieval | MrTidyRetrieval | MultiLongDocRetrieval | SQuADKorV1Retrieval | LawIRKo |
 |---|---|---|---|---|---|---|---|---|---|---|
 | Qwen/Qwen3-Reranker-8B | 8.2B | 0.8720 | 0.9653 | 0.8654 | 0.9785 | 0.8513 | 0.8416 | 0.8255 | 0.9897 | 0.9013 |
+| nvidia/Nemotron-3.5-Rerank-8B-BF16 | 8.4B | 0.8914 | 0.9686 | 0.8984 | 0.9835 | 0.8192 | 0.8262 | 0.7757 | 0.9885 | 0.9229 |
 | Qwen/Qwen3-Reranker-4B | 4.0B | 0.8733 | 0.9630 | 0.8442 | 0.9794 | 0.8559 | 0.8298 | 0.8161 | 0.9861 | 0.8766 |
 | KaLM-Embedding/KaLM-Reranker-V1-Large-R2 | 7.5B | 0.8796 | 0.9415 | 0.8633 | 0.9809 | 0.8382 | 0.8500 | 0.7970 | 0.9863 | 0.8824 |
 | nlpai-lab/KURE-Reranker-base | 1.7B | 0.8605 | 0.9870 | 0.8331 | 0.9757 | 0.8496 | 0.8252 | 0.8189 | 0.9907 | 0.8768 |
@@ -119,6 +121,7 @@ uv run streamlit run leaderboard_reranker.py
 | Model | Params | Ko-StrategyQA | AutoRAGRetrieval | PublicHealthQA | BelebeleRetrieval | MIRACLRetrieval | MrTidyRetrieval | MultiLongDocRetrieval | SQuADKorV1Retrieval | LawIRKo |
 |---|---|---|---|---|---|---|---|---|---|---|
 | Qwen/Qwen3-Reranker-8B | 8.2B | 16.5 | 7.4 | 15.3 | 20.5 | 25.0 | 26.6 | 0.7 | 10.8 | 12.4 |
+| nvidia/Nemotron-3.5-Rerank-8B-BF16 | 8.4B | 24.0 | 8.7 | 21.7 | 33.2 | 38.3 | 45.2 | 0.7 | 14.5 | 15.3 |
 | Qwen/Qwen3-Reranker-4B | 4.0B | 26.2 | 11.8 | 25.6 | 34.5 | 40.1 | 42.8 | 1.1 | 17.1 | 19.9 |
 | KaLM-Embedding/KaLM-Reranker-V1-Large-R2 | 7.5B | 28.6 | 12.4 | 25.4 | 36.9 | 39.6 | 43.8 | 0.8 | 18.7 | 21.4 |
 | nlpai-lab/KURE-Reranker-base | 1.7B | 60.9 | 27.9 | 58.5 | 77.9 | 91.7 | 99.7 | 2.5 | 39.9 | 46.2 |

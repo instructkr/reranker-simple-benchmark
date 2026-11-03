@@ -70,6 +70,7 @@ MODEL_SIZES = {
     "Qwen/Qwen3-Reranker-4B": 4_021_784_576,
     "Qwen/Qwen3-Reranker-0.6B": 595_776_512,
     "KaLM-Embedding/KaLM-Reranker-V1-Large-R2": 7_508_928_880,
+    "nvidia/Nemotron-3.5-Rerank-8B-BF16": 8_381_163_520,
 }
 
 
