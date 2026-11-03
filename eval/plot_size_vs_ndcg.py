@@ -47,7 +47,11 @@ SHORT = {
     "cross-encoder/ettin-reranker-1b-v1": "ettin-1b",
     "nlpai-lab/KURE-Reranker-nano": "KURE-nano",
     "nlpai-lab/KURE-Reranker-base": "KURE-base",
+    "nvidia/Nemotron-3.5-Rerank-8B-BF16": "Nemotron-3.5-8B",
 }
+
+# 점이 겹치는 모델의 라벨 오프셋(points). 없으면 점 오른쪽 (10, 0).
+OFFSET = {"Nemotron-3.5-8B": (10, -9)}  # Qwen3-Reranker-8B 라벨 바로 아래
 
 
 def short(model):
@@ -73,7 +77,7 @@ def main():
     crowded = lambda x: 0.4 <= x <= 0.65  # noqa: E731
     for x, y, name in pts:
         if not crowded(x):
-            ax.annotate(name, (x, y), textcoords="offset points", xytext=(10, 0),
+            ax.annotate(name, (x, y), textcoords="offset points", xytext=OFFSET.get(name, (10, 0)),
                         ha="left", va="center", fontsize=8.4, color=INK)
 
     left = sorted([p for p in pts if crowded(p[0])], key=lambda p: -p[1])  # y 내림차순

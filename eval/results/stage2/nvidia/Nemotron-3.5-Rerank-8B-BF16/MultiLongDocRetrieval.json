@@ -1,0 +1,29 @@
+{
+  "ndcg_at_1": 0.665,
+  "ndcg_at_5": 0.76553,
+  "ndcg_at_10": 0.7757000000000001,
+  "map_at_10": 0.74125,
+  "mrr_at_10": 0.7470714285714286,
+  "recall_at_10": 0.8825000000000001,
+  "main_score": 0.7757000000000001,
+  "_model": "nvidia/Nemotron-3.5-Rerank-8B-BF16",
+  "_task": "MultiLongDocRetrieval",
+  "_split": "dev+test",
+  "_max_length": 8192,
+  "_neg_top_k": 50,
+  "pps": 0.6796208025372333,
+  "pps_batch_size": 8,
+  "pps_sweep": {
+    "8": 0.6796208025372333,
+    "16": 0.6745136356641368,
+    "32": 0.5737955071730589,
+    "64": null
+  },
+  "_pps_n_pairs": 550,
+  "_pps_n_queries": 11,
+  "_pps_passes": 3,
+  "_pps_dtype": "bfloat16",
+  "_pps_attn": "flash_attention_2",
+  "_pps_gpu": "NVIDIA RTX A6000",
+  "_pps_gpu_shared": false
+}
